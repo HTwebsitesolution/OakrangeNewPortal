@@ -1,0 +1,11 @@
+# Root-level ignores (Next.js app lives in portal/)
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
+
+# Supabase CLI local cache
+portal/supabase/.temp/
