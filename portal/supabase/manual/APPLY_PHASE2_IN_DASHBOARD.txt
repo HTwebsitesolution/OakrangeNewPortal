@@ -1,0 +1,25 @@
+Apply Phase 2 schema to your hosted Supabase project
+====================================================
+
+1. Open Supabase Dashboard → your project → SQL → New query.
+
+2. Open the file next to this one:
+   PHASE2_apply_in_dashboard.sql
+
+3. Copy its ENTIRE contents into the SQL editor and click RUN once.
+
+4. Wait until it finishes with "Success". If anything errors, copy the error
+   message (do not re-run blindly if objects were partly created).
+
+5. PostgREST schema cache: PHASE2_apply_in_dashboard.sql ends with
+   NOTIFY pgrst, 'reload schema'; if you still see PGRST205, run that line again
+   in SQL or wait 1–2 minutes.
+
+6. Run again from your machine:
+   cd portal
+   npm run ensure:test-users
+
+Only run PHASE2_apply_in_dashboard.sql on a project that does NOT already have
+these tables (fresh project). If you need to reset, use Supabase support /
+drop objects carefully — do not run twice on a live DB with existing data
+without a migration plan.

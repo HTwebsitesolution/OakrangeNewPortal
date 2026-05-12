@@ -1,0 +1,40 @@
+Phase 3 — manual acceptance (run in a browser after migrations + test users exist)
+
+Prerequisites
+- portal/.env.local with Supabase URL and anon key
+- npm run dev from portal/
+- Three test accounts with profiles (e.g. npm run ensure:test-users)
+
+Checks (each should pass)
+
+1. Unauthenticated: open /admin/dashboard in a private window (or after clearing site cookies).
+   Expected: redirect to /login?redirect=/admin/dashboard
+
+2. Unauthenticated: open /portal/dashboard
+   Expected: redirect to /login?redirect=/portal/dashboard
+
+3. Sign in as admin@oakrange-test.co.uk (or your oakrange_admin user).
+   Expected: land on /admin/dashboard
+
+4. Sign in as customer@oakrange-test.co.uk (customer_user).
+   Expected: land on /portal/dashboard
+
+5. Sign in as manager@oakrange-test.co.uk (site_manager).
+   Expected: land on /portal/dashboard
+
+6. While signed in as customer (or site manager), type /admin/dashboard in the address bar.
+   Expected: redirect away to /portal/dashboard (no admin UI)
+
+7. Same as 6 for site_manager if not already covered.
+
+8. Set profiles.is_active = false for the test user in Supabase SQL, refresh or navigate to /portal/dashboard.
+   Expected: redirect to /account-disabled (and session cleared on that page)
+
+9. Remove or orphan profile for a test auth user (advanced): user with auth session but no profiles row hitting /portal/dashboard.
+   Expected: redirect to /access-pending
+
+10. Sign in as any active user, click Logout in the nav.
+    Expected: session ends; /admin or /portal sends you to login; you can sign in again.
+
+Notes
+- Access is enforced in middleware (Edge) and again in app/admin/layout.tsx and app/portal/layout.tsx (Node server). Navigation links are not the security boundary.

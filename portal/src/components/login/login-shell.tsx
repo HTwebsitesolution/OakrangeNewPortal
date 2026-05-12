@@ -1,17 +1,103 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { logAuthAudit } from "@/lib/audit/log";
+import { dashboardPathForRole } from "@/lib/auth/paths";
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
+import type { SessionProfile } from "@/types/profile";
 
 type LoginShellProps = {
   supabaseConfigured: boolean;
+  errorMessage?: string;
+  accountInactive?: boolean;
 };
 
-/**
- * Phase 1 shell: layout and fields only. Sign-in behaviour ships in a later phase.
- */
-export function LoginShell({ supabaseConfigured }: LoginShellProps) {
+export function LoginShell({
+  supabaseConfigured,
+  errorMessage,
+  accountInactive,
+}: LoginShellProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!supabaseConfigured) return;
+
+    setPending(true);
+    const supabase = createBrowserSupabaseClient();
+
+    const { error: signError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (signError) {
+      setFormError(signError.message);
+      setPending(false);
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setFormError("Sign-in failed. Please try again.");
+      setPending(false);
+      return;
+    }
+
+    const { data: profileRow, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, auth_user_id, full_name, email, role, company_id, is_active")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
+
+    if (profileError || !profileRow) {
+      await supabase.auth.signOut();
+      setFormError(
+        "No profile is linked to this account yet. Please contact Oakrange."
+      );
+      setPending(false);
+      return;
+    }
+
+    const profile = profileRow as SessionProfile;
+
+    if (!profile.is_active) {
+      await supabase.auth.signOut();
+      router.replace("/account-disabled");
+      router.refresh();
+      setPending(false);
+      return;
+    }
+
+    const { error: auditError } = await logAuthAudit(supabase, {
+      userId: profile.id,
+      userRole: profile.role,
+      action: "login",
+    });
+    if (auditError) {
+      console.warn("Audit log (login) failed:", auditError.message);
+    }
+
+    const fromQuery = safeRedirectPath(searchParams.get("redirect") ?? undefined);
+    const dest = fromQuery ?? dashboardPathForRole(profile.role);
+
+    router.replace(dest);
+    router.refresh();
+    setPending(false);
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-8 px-4 py-16 sm:px-0">
@@ -26,6 +112,20 @@ export function LoginShell({ supabaseConfigured }: LoginShellProps) {
           Sign in to view or manage calibration certificates.
         </p>
       </header>
+
+      {accountInactive ? (
+        <p
+          className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+          role="alert"
+        >
+          This account has been deactivated. Please contact Oakrange if you need
+          access. You can also visit{" "}
+          <Link href="/account-disabled" className="font-medium underline">
+            account status
+          </Link>{" "}
+          to clear your session.
+        </p>
+      ) : null}
 
       {!supabaseConfigured ? (
         <p
@@ -44,11 +144,33 @@ export function LoginShell({ supabaseConfigured }: LoginShellProps) {
         </p>
       ) : null}
 
+      {errorMessage ? (
+        <p
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100"
+          role="alert"
+        >
+          {(() => {
+            try {
+              return decodeURIComponent(errorMessage);
+            } catch {
+              return errorMessage;
+            }
+          })()}
+        </p>
+      ) : null}
+
+      {formError ? (
+        <p
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100"
+          role="alert"
+        >
+          {formError}
+        </p>
+      ) : null}
+
       <form
         className="flex flex-col gap-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
+        onSubmit={(e) => void onSubmit(e)}
       >
         <div className="flex flex-col gap-2">
           <label
@@ -66,7 +188,8 @@ export function LoginShell({ supabaseConfigured }: LoginShellProps) {
             onChange={(e) => setEmail(e.target.value)}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
             placeholder="you@company.com"
-            disabled={!supabaseConfigured}
+            disabled={!supabaseConfigured || pending}
+            required
           />
         </div>
 
@@ -86,22 +209,18 @@ export function LoginShell({ supabaseConfigured }: LoginShellProps) {
             onChange={(e) => setPassword(e.target.value)}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
             placeholder="••••••••"
-            disabled={!supabaseConfigured}
+            disabled={!supabaseConfigured || pending}
+            required
           />
         </div>
 
         <button
           type="submit"
           className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          disabled={!supabaseConfigured}
+          disabled={!supabaseConfigured || pending}
         >
-          Sign in
+          {pending ? "Signing in…" : "Sign in"}
         </button>
-
-        <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-          Authentication will be wired in a later phase. This screen confirms
-          layout and Supabase client setup.
-        </p>
       </form>
     </div>
   );

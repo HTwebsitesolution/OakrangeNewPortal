@@ -8,8 +8,9 @@ ON CONFLICT (id)
   DO UPDATE SET
     public = EXCLUDED.public;
 
--- Ensure RLS is enabled on storage.objects (default in Supabase; harmless if already on)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Do not ALTER storage.objects here: dashboard SQL runs as a role that is not the
+-- table owner (42501: must be owner of table objects). Supabase enables RLS on
+-- storage.objects by default.
 
 -- Intentionally omit policies granting SELECT/INSERT to authenticated for bucket `certificates`.
 -- Service role bypasses RLS for controlled server operations.

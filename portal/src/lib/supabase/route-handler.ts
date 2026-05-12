@@ -4,12 +4,10 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 /**
- * Supabase client for Server Components, Server Actions, and Route Handlers.
- * Uses the anon key and the user session from cookies; RLS applies.
+ * Supabase client for Route Handlers (e.g. auth callback). Anon key + cookies.
  */
-export async function createServerSupabaseClient() {
+export async function createRouteHandlerSupabaseClient() {
   const cookieStore = await cookies();
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -25,13 +23,9 @@ export async function createServerSupabaseClient() {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        } catch {
-          // Called from a Server Component without mutable cookies; middleware keeps session fresh.
-        }
+        cookiesToSet.forEach(({ name, value, options }) =>
+          cookieStore.set(name, value, options)
+        );
       },
     },
   });

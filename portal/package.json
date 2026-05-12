@@ -9,14 +9,16 @@
     "lint": "eslint",
     "db:reset": "supabase db reset",
     "db:test": "supabase db test",
-    "test:rls": "node tests/rls-phase2.mjs"
+    "test:rls": "node tests/rls-phase2.mjs",
+    "ensure:test-users": "node scripts/ensure-phase3-test-users.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "next": "15.5.18",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
