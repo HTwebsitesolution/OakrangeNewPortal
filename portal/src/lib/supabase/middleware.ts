@@ -57,6 +57,7 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const publicRoute = isPublicPath(pathname);
+  const certificateApiRoute = pathname.startsWith("/api/admin/certificates");
 
   if (publicRoute) {
     if (
@@ -76,6 +77,12 @@ export async function updateSession(request: NextRequest) {
         return redirectRes;
       }
     }
+    return supabaseResponse;
+  }
+
+  // Certificate admin APIs return JSON/redirect responses from their own route handlers.
+  // Let them handle auth failures instead of forcing page-style dashboard redirects here.
+  if (certificateApiRoute) {
     return supabaseResponse;
   }
 

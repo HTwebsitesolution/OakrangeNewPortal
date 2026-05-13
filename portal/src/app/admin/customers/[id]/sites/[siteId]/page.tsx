@@ -52,6 +52,12 @@ export default async function SiteDetailPage({
 
   const users = [...usersMap.values()];
 
+  const { count: certificateCount } = await supabase
+    .from("certificate_documents")
+    .select("*", { count: "exact", head: true })
+    .eq("company_id", companyId)
+    .eq("site_id", siteId);
+
   return (
     <div className="mt-6 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -96,11 +102,31 @@ export default async function SiteDetailPage({
       </dl>
 
       <section>
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Certificates</h3>
-        <p className="mt-2 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-          Certificate upload and signed downloads are Phase 5. This page will list published
-          documents for this site.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              Certificates
+            </h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {certificateCount ?? 0} certificate{certificateCount === 1 ? "" : "s"} linked to this
+              site.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href={`/admin/customers/${companyId}/sites/${siteId}/certificates`}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600"
+            >
+              View certificates
+            </Link>
+            <Link
+              href={`/admin/customers/${companyId}/sites/${siteId}/certificates/upload`}
+              className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              Upload certificate
+            </Link>
+          </div>
+        </div>
       </section>
 
       <section>

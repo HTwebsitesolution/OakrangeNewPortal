@@ -6,6 +6,13 @@ export type AdminAuditAction =
   | "customer_created"
   | "customer_updated"
   | "customer_deactivated"
+  | "certificate_uploaded"
+  | "certificate_published"
+  | "certificate_viewed_admin"
+  | "certificate_downloaded_admin"
+  | "certificate_replaced"
+  | "certificate_voided"
+  | "certificate_archived"
   | "site_created"
   | "site_updated"
   | "site_deactivated"
@@ -55,6 +62,8 @@ export async function logAdminAudit(
     companyId?: string | null;
     siteId?: string | null;
     metadata?: Record<string, unknown>;
+    ipAddress?: string | null;
+    userAgent?: string | null;
   }
 ): Promise<{ error: Error | null }> {
   const { error } = await supabase.from("audit_logs").insert({
@@ -66,6 +75,8 @@ export async function logAdminAudit(
     company_id: input.companyId ?? null,
     site_id: input.siteId ?? null,
     metadata_json: input.metadata ?? {},
+    ip_address: input.ipAddress ?? null,
+    user_agent: input.userAgent ?? null,
   });
 
   return { error: error ? new Error(error.message) : null };
