@@ -65,11 +65,16 @@ export function LoginShell({
       .eq("auth_user_id", user.id)
       .maybeSingle();
 
-    if (profileError || !profileRow) {
-      await supabase.auth.signOut();
-      setFormError(
-        "No profile is linked to this account yet. Please contact Oakrange."
-      );
+    if (profileError) {
+      setFormError(profileError.message);
+      setPending(false);
+      return;
+    }
+
+    if (!profileRow) {
+      // Keep the valid auth session so middleware/server checks can consistently route to /access-pending.
+      router.replace("/access-pending");
+      router.refresh();
       setPending(false);
       return;
     }
