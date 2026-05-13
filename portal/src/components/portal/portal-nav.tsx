@@ -39,7 +39,7 @@ export function PortalNav({ profile }: { profile: SessionProfile }) {
           <span className="hidden text-xs text-zinc-500 sm:inline dark:text-zinc-400">
             {profile.full_name || profile.email}
           </span>
-          <LogoutButton profile={profile} />
+          <LogoutButton />
         </div>
       </div>
     </header>

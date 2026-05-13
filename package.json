@@ -1,0 +1,17 @@
+{
+  "name": "oakrange-newportal",
+  "private": true,
+  "description": "Repo root. The Next.js app and package.json live in ./portal — use these scripts from here, or cd portal first.",
+  "scripts": {
+    "dev": "npm run dev --prefix portal",
+    "dev:clean": "npm run dev:clean --prefix portal",
+    "clean": "npm run clean --prefix portal",
+    "build": "npm run build --prefix portal",
+    "start": "npm run start --prefix portal",
+    "lint": "npm run lint --prefix portal",
+    "test:rls": "npm run test:rls --prefix portal",
+    "ensure:test-users": "npm run ensure:test-users --prefix portal",
+    "db:reset": "npm run db:reset --prefix portal",
+    "db:test": "npm run db:test --prefix portal"
+  }
+}

@@ -6,6 +6,7 @@ import "server-only";
  * or client-only role checks for access control.
  */
 import { redirect } from "next/navigation";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fetchProfileByAuthUserId } from "@/lib/auth/get-profile";
 import type { SessionProfile } from "@/types/profile";
@@ -27,7 +28,8 @@ export async function readAuthForLoginPage(): Promise<{
   return { user, profile };
 }
 
-async function loadSessionProfile(): Promise<{
+async function loadSessionWithClient(): Promise<{
+  supabase: SupabaseClient;
   user: { id: string };
   profile: SessionProfile;
 } | null> {
@@ -47,13 +49,13 @@ async function loadSessionProfile(): Promise<{
     redirect("/account-disabled");
   }
 
-  return { user, profile };
+  return { supabase, user, profile };
 }
 
 export async function requireAdminProfile(): Promise<{
   profile: SessionProfile;
 }> {
-  const session = await loadSessionProfile();
+  const session = await loadSessionWithClient();
   if (!session) {
     redirect("/login?redirect=/admin/dashboard");
   }
@@ -65,10 +67,27 @@ export async function requireAdminProfile(): Promise<{
   return { profile: session.profile };
 }
 
+/** Same as `requireAdminProfile` but returns the Supabase server client for RLS-bound mutations. */
+export async function requireAdminSupabase(): Promise<{
+  supabase: SupabaseClient;
+  profile: SessionProfile;
+}> {
+  const session = await loadSessionWithClient();
+  if (!session) {
+    redirect("/login?redirect=/admin/dashboard");
+  }
+
+  if (session.profile.role !== "oakrange_admin") {
+    redirect("/unauthorized");
+  }
+
+  return { supabase: session.supabase, profile: session.profile };
+}
+
 export async function requirePortalProfile(): Promise<{
   profile: SessionProfile;
 }> {
-  const session = await loadSessionProfile();
+  const session = await loadSessionWithClient();
   if (!session) {
     redirect("/login?redirect=/portal/dashboard");
   }

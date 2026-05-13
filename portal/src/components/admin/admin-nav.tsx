@@ -42,7 +42,7 @@ export function AdminNav({ profile }: { profile: SessionProfile }) {
           <span className="hidden text-xs text-zinc-500 sm:inline dark:text-zinc-400">
             {profile.email}
           </span>
-          <LogoutButton profile={profile} />
+          <LogoutButton />
         </div>
       </div>
     </header>

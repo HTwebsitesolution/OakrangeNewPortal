@@ -7,6 +7,7 @@ export const PUBLIC_PATH_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/auth/callback",
+  "/auth/signout",
   "/account-disabled",
   "/access-pending",
   "/unauthorized",

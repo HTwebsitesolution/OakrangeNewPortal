@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { logAuthAudit } from "@/lib/audit/log";
@@ -13,15 +13,17 @@ type LoginShellProps = {
   supabaseConfigured: boolean;
   errorMessage?: string;
   accountInactive?: boolean;
+  /** Post-login redirect from `?redirect=` (read on server to avoid client Suspense issues). */
+  redirectParam?: string;
 };
 
 export function LoginShell({
   supabaseConfigured,
   errorMessage,
   accountInactive,
+  redirectParam,
 }: LoginShellProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export function LoginShell({
       console.warn("Audit log (login) failed:", auditError.message);
     }
 
-    const fromQuery = safeRedirectPath(searchParams.get("redirect") ?? undefined);
+    const fromQuery = safeRedirectPath(redirectParam);
     const dest = fromQuery ?? dashboardPathForRole(profile.role);
 
     router.replace(dest);
