@@ -30,6 +30,7 @@ export function LoginShell({
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,9 +120,9 @@ export function LoginShell({
   return (
     <div className="space-y-6">
       <header>
-        <h2 className="text-xl font-semibold tracking-tight text-oak-navy">Sign in</h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-oak-navy">Welcome back</h2>
         <p className="mt-1 text-sm text-oak-muted">
-          Use the email and password provided by Oakrange Engineering.
+          Sign in with the email and password provided by Oakrange Engineering.
         </p>
       </header>
 
@@ -177,7 +178,7 @@ export function LoginShell({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={inputClass}
-            placeholder="you@company.com"
+            placeholder="you@company.com or customer reference"
             disabled={!supabaseConfigured || pending}
             required
           />
@@ -187,18 +188,29 @@ export function LoginShell({
           <label htmlFor="password" className={labelClass}>
             Password
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-            placeholder="••••••••"
-            disabled={!supabaseConfigured || pending}
-            required
-          />
+          <div className="relative">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`${inputClass} pr-10`}
+              placeholder="Enter your password"
+              disabled={!supabaseConfigured || pending}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-oak-muted hover:text-oak-orange"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              tabIndex={-1}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
 
         <Button
@@ -207,7 +219,7 @@ export function LoginShell({
           className="w-full"
           disabled={!supabaseConfigured || pending}
         >
-          {pending ? "Signing in…" : "Sign in"}
+          {pending ? "Signing in…" : "Sign in →"}
         </Button>
       </form>
     </div>

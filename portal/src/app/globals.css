@@ -46,3 +46,24 @@ body {
 ::selection {
   background: rgba(249, 115, 22, 0.25);
 }
+
+@keyframes login-ken-burns {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.06) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-login-ken-burns {
+    animation: login-ken-burns 28s ease-in-out infinite alternate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-login-ken-burns {
+    animation: none;
+  }
+}

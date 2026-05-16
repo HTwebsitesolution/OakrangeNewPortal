@@ -2,7 +2,7 @@ import "server-only";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AuthLayout } from "@/components/layout/auth-layout";
+import { LoginAuthLayout } from "@/components/layout/login-auth-layout";
 import { LoginShell } from "@/components/login/login-shell";
 import { isSupabaseConfigured } from "@/lib/env";
 import { dashboardPathForRole } from "@/lib/auth/paths";
@@ -42,7 +42,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   );
 
   return (
-    <AuthLayout
+    <LoginAuthLayout
       footer={
         <Link href="/forgot-password" className="text-sm font-medium text-oak-orange hover:underline">
           Forgot your password?
@@ -55,6 +55,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         accountInactive={accountInactive}
         redirectParam={sp.redirect}
       />
-    </AuthLayout>
+    </LoginAuthLayout>
   );
 }
