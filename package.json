@@ -14,6 +14,10 @@
     "test:phase6:seed": "npm run test:phase6:seed --prefix portal",
     "test:phase6:runtime": "npm run test:phase6:runtime --prefix portal",
     "test:phase6:routing": "npm run test:phase6:routing --prefix portal",
+    "test:phase7": "npm run test:phase7 --prefix portal",
+    "test:security": "npm run test:security --prefix portal",
+    "seed:demo": "npm run seed:demo --prefix portal",
+    "test:all": "npm run test:all --prefix portal",
     "ensure:test-users": "npm run ensure:test-users --prefix portal",
     "db:reset": "npm run db:reset --prefix portal",
     "db:test": "npm run db:test --prefix portal"

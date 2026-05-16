@@ -78,6 +78,7 @@ export async function GET(
     siteId: certificate.site_id,
     metadata: {
       intent,
+      display_title: certificate.display_title,
       download_file_name: certificate.download_file_name,
     },
     ipAddress: metadata.ipAddress,

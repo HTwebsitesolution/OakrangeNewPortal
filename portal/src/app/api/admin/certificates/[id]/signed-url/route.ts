@@ -78,7 +78,7 @@ export async function GET(
     companyId: certificate.company_id,
     siteId: certificate.site_id,
     metadata: {
-      storage_path: certificate.storage_path,
+      display_title: certificate.display_title,
       download_file_name: certificate.download_file_name,
       intent,
     },

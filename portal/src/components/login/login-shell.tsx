@@ -82,6 +82,15 @@ export function LoginShell({
     const profile = profileRow as SessionProfile;
 
     if (!profile.is_active) {
+      const { error: blockAuditError } = await logAuthAudit(supabase, {
+        userId: profile.id,
+        userRole: profile.role,
+        action: "account_disabled_block",
+        metadata: { email: profile.email },
+      });
+      if (blockAuditError) {
+        console.warn("Audit log (account disabled) failed:", blockAuditError.message);
+      }
       await supabase.auth.signOut();
       router.replace("/account-disabled");
       router.refresh();

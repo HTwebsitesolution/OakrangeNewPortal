@@ -110,11 +110,17 @@ export async function updateCustomerAction(
   if (error) return { error: error.message };
 
   const becameInactive = before?.status === "active" && status === "inactive";
+  const becameActive = before?.status === "inactive" && status === "active";
+  const auditAction = becameInactive
+    ? "customer_deactivated"
+    : becameActive
+      ? "customer_reactivated"
+      : "customer_updated";
 
   const { error: auditErr } = await logAdminAudit(supabase, {
     actorProfileId: profile.id,
     actorRole: profile.role,
-    action: becameInactive ? "customer_deactivated" : "customer_updated",
+    action: auditAction,
     entityType: "company",
     entityId: companyId,
     companyId,

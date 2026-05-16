@@ -8,6 +8,9 @@
  * In CI, set these secrets and optionally REQUIRE_RLS_TESTS=1 to fail if env is missing.
  */
 import { createClient } from "@supabase/supabase-js";
+import { loadEnvLocal } from "../scripts/load-env-local.mjs";
+
+loadEnvLocal();
 
 const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

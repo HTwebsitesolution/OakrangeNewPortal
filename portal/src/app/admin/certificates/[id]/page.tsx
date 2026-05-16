@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CertificateAuditTrail } from "@/components/admin/certificate-audit-trail";
 import { CertificateLifecycleActions } from "@/components/admin/certificate-lifecycle-actions";
 import { one } from "@/lib/admin/embed";
 import { getCertificateDocumentTypeLabel } from "@/lib/certificates/document-types";
@@ -8,6 +9,7 @@ import {
   getCertificateExpiryState,
   getCertificatePublishedMessage,
 } from "@/lib/certificates/format";
+import { listCertificateAuditLogs } from "@/lib/audit/queries";
 import { loadCertificateForAdmin } from "@/lib/certificates/service";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 
@@ -25,7 +27,10 @@ export default async function AdminCertificateDetailPage({
   if (!UUID_RE.test(id)) notFound();
 
   const { supabase } = await requireAdminSupabase();
-  const { certificate, error } = await loadCertificateForAdmin(supabase, id);
+  const [{ certificate, error }, { rows: auditRows }] = await Promise.all([
+    loadCertificateForAdmin(supabase, id),
+    listCertificateAuditLogs(supabase, id),
+  ]);
   if (error || !certificate) notFound();
 
   const company = one(certificate.companies);
@@ -187,6 +192,8 @@ export default async function AdminCertificateDetailPage({
             status={certificate.status}
             replaceHref={`/admin/certificates/${certificate.id}/replace`}
           />
+
+          <CertificateAuditTrail rows={auditRows} certificateId={certificate.id} />
         </section>
 
         <aside className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">

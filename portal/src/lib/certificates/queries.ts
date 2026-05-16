@@ -49,6 +49,16 @@ export type CertificateListFilters = {
   displayTitle?: string | null;
   notesSearch?: string | null;
   tag?: string | null;
+  page?: number;
+  pageSize?: number;
+};
+
+export type AdminCertificateListResult = {
+  rows: AdminCertificateListRow[];
+  error: string | null;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
 };
 
 export function parseCertificateStatus(
@@ -163,7 +173,12 @@ async function matchProfileIds(
 export async function listAdminCertificates(
   supabase: SupabaseClient,
   filters: CertificateListFilters
-): Promise<{ rows: AdminCertificateListRow[]; error: string | null }> {
+): Promise<AdminCertificateListResult> {
+  const page = filters.page && filters.page > 0 ? filters.page : 1;
+  const pageSize =
+    filters.pageSize && filters.pageSize > 0 ? Math.min(filters.pageSize, 100) : 50;
+  const offset = (page - 1) * pageSize;
+  const fetchTo = offset + pageSize;
   const customerSearch = normalizeSearch(filters.customerSearch);
   const siteSearch = normalizeSearch(filters.siteSearch);
   const uploadedBySearch = normalizeSearch(filters.uploadedBySearch);
@@ -175,22 +190,22 @@ export async function listAdminCertificates(
   ]);
 
   if (customerSearch && (companyIds?.length ?? 0) === 0) {
-    return { rows: [], error: null };
+    return { rows: [], error: null, page, pageSize, hasMore: false };
   }
 
   if (siteSearch && (siteIds?.length ?? 0) === 0) {
-    return { rows: [], error: null };
+    return { rows: [], error: null, page, pageSize, hasMore: false };
   }
 
   if (uploadedBySearch && (uploadedByIds?.length ?? 0) === 0) {
-    return { rows: [], error: null };
+    return { rows: [], error: null, page, pageSize, hasMore: false };
   }
 
   let query = supabase
     .from("certificate_documents")
     .select(ADMIN_CERTIFICATE_SELECT)
     .order("uploaded_at", { ascending: false })
-    .limit(500);
+    .range(offset, fetchTo);
 
   if (filters.companyId) {
     query = query.eq("company_id", filters.companyId);
@@ -268,22 +283,37 @@ export async function listAdminCertificates(
 
   const { data, error } = await query;
   if (error) {
-    return { rows: [], error: error.message };
+    return { rows: [], error: error.message, page, pageSize, hasMore: false };
+  }
+
+  let rows = ((data ?? []) as unknown) as AdminCertificateListRow[];
+  const hasMore = rows.length > pageSize;
+  if (hasMore) {
+    rows = rows.slice(0, pageSize);
   }
 
   return {
-    rows: ((data ?? []) as unknown) as AdminCertificateListRow[],
+    rows,
     error: null,
+    page,
+    pageSize,
+    hasMore,
   };
 }
 
 export function readCertificateListFilters(input: {
   [key: string]: string | string[] | undefined;
-}): CertificateListFilters {
+}): CertificateListFilters & { page: number; pageSize: number } {
   const get = (key: string) => {
     const value = input[key];
     return Array.isArray(value) ? value[0] : value;
   };
+
+  const rawPage = Number.parseInt(get("page") ?? "1", 10);
+  const rawSize = Number.parseInt(get("pageSize") ?? "50", 10);
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+  const pageSize =
+    Number.isFinite(rawSize) && rawSize > 0 ? Math.min(rawSize, 100) : 50;
 
   return {
     customerSearch: normalizeSearch(get("customerSearch")),
@@ -301,5 +331,7 @@ export function readCertificateListFilters(input: {
     dueDateTo: normalizeSearch(get("dueDateTo")),
     uploadDateFrom: normalizeSearch(get("uploadDateFrom")),
     uploadDateTo: normalizeSearch(get("uploadDateTo")),
+    page,
+    pageSize,
   };
 }

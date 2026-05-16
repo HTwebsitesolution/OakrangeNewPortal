@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Oakrange Certificate Portal
 
-## Getting Started
+Next.js application for Oakrange staff to manage customer certificates and for customers/site managers to view and download published PDFs securely.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Next.js 15** (App Router) in this `portal/` directory
+- **Supabase** — Auth, Postgres with RLS, private `certificates` storage bucket
+- **Vercel** — recommended hosting
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+From the repository root you can run `npm run dev` (proxies to `portal/`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quick start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Copy environment file:
 
-## Learn More
+   ```bash
+   cd portal
+   cp .env.example .env.local
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Fill in Supabase URL, anon key, and service role key (see [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Apply database migrations in the Supabase SQL Editor (files under `supabase/migrations/`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Create the first admin user (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 
-## Deploy on Vercel
+5. Install and run:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+6. Open [http://localhost:3000/login](http://localhost:3000/login).
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Required environment variables |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Vercel + Supabase setup |
+| [docs/TESTING.md](docs/TESTING.md) | Lint, build, and test scripts |
+| [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) | Auth, RLS, PDF access, audit |
+| [docs/USER_ROLES.md](docs/USER_ROLES.md) | Roles and access rules |
+| [docs/MVP_ACCEPTANCE.md](docs/MVP_ACCEPTANCE.md) | MVP checklist and Phase 8 status |
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run test:all` | Lint, build, security, RLS, Phase 6 & 7 (dev server required for runtime tests) |
+| `npm run test:phase6:seed` | Idempotent acceptance test data |
+| `npm run test:security` | Static security checks |
+
+## MVP scope
+
+In scope: admin customer/site/user management, certificate upload/publish/replace/void/archive, customer portal, site manager multi-site access, private PDFs via short-lived signed URLs, audit logs.
+
+Out of scope for MVP: bulk upload, notifications, QR, OCR, tool-level tracking, customer-side user management.

@@ -54,6 +54,7 @@ const PORTAL_SIGNED_URL_SELECT = `
   company_id,
   site_id,
   storage_path,
+  display_title,
   download_file_name,
   status,
   published_at
@@ -261,9 +262,8 @@ export async function listPortalCertificates(
     );
   }
 
-  if (filters.limit && filters.limit > 0) {
-    query = query.limit(filters.limit);
-  }
+  const listLimit = filters.limit && filters.limit > 0 ? Math.min(filters.limit, 300) : 300;
+  query = query.limit(listLimit);
 
   const { data, error } = await query;
 
@@ -319,6 +319,7 @@ export async function getPortalCertificateForSignedUrl(
     company_id: string;
     site_id: string | null;
     storage_path: string;
+    display_title: string;
     download_file_name: string;
   } | null;
   error: string | null;
@@ -340,6 +341,7 @@ export async function getPortalCertificateForSignedUrl(
     company_id: string;
     site_id: string | null;
     storage_path: string | null;
+    display_title: string;
     download_file_name: string;
   } | null;
 
@@ -353,6 +355,7 @@ export async function getPortalCertificateForSignedUrl(
       company_id: row.company_id,
       site_id: row.site_id,
       storage_path: row.storage_path,
+      display_title: row.display_title,
       download_file_name: row.download_file_name,
     },
     error: null,

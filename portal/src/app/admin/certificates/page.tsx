@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CertificateListFiltersForm } from "@/components/admin/certificate-list-filters";
 import { CertificateTable } from "@/components/admin/certificate-table";
+import { ListPagination } from "@/components/ui/list-pagination";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 import {
   listAdminCertificates,
@@ -12,9 +13,14 @@ export default async function AdminCertificatesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const filters = readCertificateListFilters(await searchParams);
+  const resolvedParams = await searchParams;
+  const filters = readCertificateListFilters(resolvedParams);
   const { supabase } = await requireAdminSupabase();
-  const { rows, error } = await listAdminCertificates(supabase, filters);
+  const { rows, error, page, hasMore } = await listAdminCertificates(supabase, filters);
+  const paginationParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(resolvedParams)) {
+    if (typeof value === "string" && value) paginationParams.set(key, value);
+  }
 
   return (
     <div className="space-y-6">
@@ -50,6 +56,14 @@ export default async function AdminCertificatesPage({
       <CertificateTable
         rows={rows}
         emptyMessage="No certificates match the current filters."
+      />
+
+      <ListPagination
+        basePath="/admin/certificates"
+        searchParams={paginationParams}
+        page={page}
+        hasMore={hasMore}
+        rowCount={rows.length}
       />
     </div>
   );

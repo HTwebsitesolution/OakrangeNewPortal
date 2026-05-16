@@ -153,10 +153,23 @@ export async function createPortalUserAction(
     entityType: "profile",
     entityId: profileRow.id,
     companyId: finalCompanyId,
-    metadata: { email, role },
+    metadata: { email, role, full_name: full_name || email },
   });
   if (auditErr) {
     console.warn("Audit log (user create) failed:", auditErr.message);
+  }
+
+  const { error: inviteAuditErr } = await logAdminAudit(supabase, {
+    actorProfileId: actor.id,
+    actorRole: actor.role,
+    action: "password_reset_or_invite_sent",
+    entityType: "profile",
+    entityId: profileRow.id,
+    companyId: finalCompanyId,
+    metadata: { email, method: "admin_create_with_temp_password" },
+  });
+  if (inviteAuditErr) {
+    console.warn("Audit log (password invite) failed:", inviteAuditErr.message);
   }
 
   revalidatePath("/admin/users");
@@ -246,15 +259,28 @@ export async function updatePortalUserAction(
   }
 
   const becameInactive = existing.is_active && !is_active;
+  const becameActive = !existing.is_active && is_active;
+  const roleChanged = existing.role !== role;
+
+  let auditAction: "user_deactivated" | "user_reactivated" | "user_role_changed" | "user_updated" =
+    "user_updated";
+  if (becameInactive) auditAction = "user_deactivated";
+  else if (becameActive) auditAction = "user_reactivated";
+  else if (roleChanged) auditAction = "user_role_changed";
 
   const { error: auditErr } = await logAdminAudit(supabase, {
     actorProfileId: actor.id,
     actorRole: actor.role,
-    action: becameInactive ? "user_deactivated" : "user_updated",
+    action: auditAction,
     entityType: "profile",
     entityId: profileId,
     companyId: finalCompanyId,
-    metadata: { email, role, is_active },
+    metadata: {
+      email,
+      role,
+      is_active,
+      ...(roleChanged ? { previous_role: existing.role } : {}),
+    },
   });
   if (auditErr) {
     console.warn("Audit log (user update) failed:", auditErr.message);

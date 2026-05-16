@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+.phase6-test-manifest.json
+.phase6-runtime-results.json
 
 # next.js
 /.next/
