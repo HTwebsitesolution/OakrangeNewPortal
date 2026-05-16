@@ -70,6 +70,46 @@ export function buildCertificateDownloadFilename(input: {
   return `${parts.join(" - ")}.pdf`;
 }
 
+export function startOfUtcDay(input = new Date()): Date {
+  return new Date(
+    Date.UTC(input.getUTCFullYear(), input.getUTCMonth(), input.getUTCDate())
+  );
+}
+
+export function addUtcDays(input: Date, days: number): Date {
+  const next = new Date(input);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
+
+export function formatPortalExpiryLabel(state: CertificateExpiryState): string {
+  if (state === "expired") return "Expired";
+  if (state === "no_due_date") return "No due date";
+  if (state === "active") return "Active";
+  return state.replaceAll("_", " ");
+}
+
+export function isCertificateExpiringSoon(input: {
+  dueDate: string | null;
+  status: CertificateStatus;
+  withinDays?: number;
+  today?: Date;
+}): boolean {
+  if (input.status !== "active" || !input.dueDate) return false;
+
+  const expiryState = getCertificateExpiryState({
+    status: input.status,
+    dueDate: input.dueDate,
+    today: input.today,
+  });
+  if (expiryState !== "active") return false;
+
+  const due = parseDateOnly(input.dueDate);
+  const today = startOfUtcDay(input.today ?? new Date());
+  const horizon = addUtcDays(today, input.withinDays ?? 30);
+  return due >= today && due <= horizon;
+}
+
 export function getCertificateExpiryState(input: {
   status: CertificateStatus;
   dueDate: string | null;
@@ -81,10 +121,7 @@ export function getCertificateExpiryState(input: {
   if (!input.dueDate) return "no_due_date";
 
   const due = parseDateOnly(input.dueDate);
-  const today = input.today ?? new Date();
-  const day = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
-  );
+  const day = startOfUtcDay(input.today ?? new Date());
 
   return due < day ? "expired" : "active";
 }

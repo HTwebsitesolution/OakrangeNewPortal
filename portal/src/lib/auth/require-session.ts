@@ -101,3 +101,23 @@ export async function requirePortalProfile(): Promise<{
 
   return { profile: session.profile };
 }
+
+/** Same as `requirePortalProfile` but returns the Supabase server client for RLS-bound queries. */
+export async function requirePortalSupabase(): Promise<{
+  supabase: SupabaseClient;
+  profile: SessionProfile;
+}> {
+  const session = await loadSessionWithClient();
+  if (!session) {
+    redirect("/login?redirect=/portal/dashboard");
+  }
+
+  if (
+    session.profile.role !== "site_manager" &&
+    session.profile.role !== "customer_user"
+  ) {
+    redirect("/unauthorized");
+  }
+
+  return { supabase: session.supabase, profile: session.profile };
+}

@@ -57,7 +57,9 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const publicRoute = isPublicPath(pathname);
-  const certificateApiRoute = pathname.startsWith("/api/admin/certificates");
+  const certificateApiRoute =
+    pathname.startsWith("/api/admin/certificates") ||
+    pathname.startsWith("/api/portal/certificates");
 
   if (publicRoute) {
     if (

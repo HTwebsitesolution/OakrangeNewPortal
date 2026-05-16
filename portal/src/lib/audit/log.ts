@@ -13,6 +13,8 @@ export type AdminAuditAction =
   | "certificate_replaced"
   | "certificate_voided"
   | "certificate_archived"
+  | "certificate_viewed_customer"
+  | "certificate_downloaded_customer"
   | "site_created"
   | "site_updated"
   | "site_deactivated"
