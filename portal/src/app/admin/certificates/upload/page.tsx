@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { CertificateUploadForm } from "@/components/admin/certificate-upload-form";
+import { PageHeader } from "@/components/ui/page-header";
+import { brand } from "@/lib/copy/brand";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 
 export default async function AdminCertificateUploadPage() {
@@ -21,15 +23,12 @@ export default async function AdminCertificateUploadPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Upload certificate
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Publish a company-level or site-level certificate into private storage.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow={brand.admin.dashboardEyebrow}
+        title={brand.admin.uploadPageTitle}
+        description={brand.admin.uploadPageLead}
+      />
 
       <CertificateUploadForm
         apiPath="/api/admin/certificates/upload"
@@ -47,7 +46,7 @@ export default async function AdminCertificateUploadPage() {
           siteName: site.site_name,
           status: site.status,
         }))}
-        helperText="Uploads stay private in Supabase Storage and are only exposed through admin-only signed URLs."
+        helperText={brand.admin.uploadHelper}
       />
     </div>
   );

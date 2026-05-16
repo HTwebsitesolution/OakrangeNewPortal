@@ -35,7 +35,14 @@
 }
 
 body {
-  background: var(--oak-bg);
+  background:
+    radial-gradient(ellipse 120% 80% at 100% -20%, rgba(249, 115, 22, 0.06), transparent 50%),
+    radial-gradient(ellipse 80% 50% at 0% 100%, rgba(15, 23, 42, 0.04), transparent 45%),
+    var(--oak-bg);
   color: var(--oak-charcoal);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.25);
 }

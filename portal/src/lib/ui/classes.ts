@@ -8,6 +8,11 @@ export const inputClass =
 
 export const labelClass = "block text-sm font-medium text-oak-charcoal";
 
+export const fileInputClass =
+  "mt-2 flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-oak-border bg-slate-50/80 px-4 py-8 text-center transition hover:border-oak-orange/50 hover:bg-orange-50/30 focus-within:border-oak-orange focus-within:ring-2 focus-within:ring-oak-orange/20";
+
+export const sectionTitleClass = "text-sm font-semibold tracking-tight text-oak-navy";
+
 export const tableShellClass =
   "overflow-x-auto rounded-xl border border-oak-border bg-oak-card shadow-sm";
 

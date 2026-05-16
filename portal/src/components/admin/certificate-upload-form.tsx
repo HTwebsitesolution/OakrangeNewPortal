@@ -11,9 +11,17 @@ import {
   buildCertificateDownloadFilename,
 } from "@/lib/certificates/format";
 import type { CertificateDocumentType } from "@/lib/certificates/types";
+import { UploadStepIndicator } from "@/components/admin/upload-step-indicator";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { cardClass, inputClass } from "@/lib/ui/classes";
+import { brand } from "@/lib/copy/brand";
+import {
+  cardClass,
+  fileInputClass,
+  inputClass,
+  labelClass,
+  sectionTitleClass,
+} from "@/lib/ui/classes";
 
 type CompanyOption = {
   id: string;
@@ -137,6 +145,12 @@ export function CertificateUploadForm({
         ? "Uploads are blocked for inactive sites."
         : null;
 
+  const activeStep = useMemo((): 1 | 2 | 3 => {
+    if (generatedPreview && fileName) return 3;
+    if (companyId && documentType && issueDate) return 2;
+    return 1;
+  }, [companyId, documentType, issueDate, generatedPreview, fileName]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -172,28 +186,33 @@ export function CertificateUploadForm({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Link href={backHref} className="text-sm font-medium text-oak-orange hover:underline">
         ← Back
       </Link>
-      <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
+      <UploadStepIndicator activeStep={activeStep} />
+      <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
         {helperText ? <Alert variant="info">{helperText}</Alert> : null}
+        {!helperText ? <Alert variant="info">{brand.admin.uploadHelper}</Alert> : null}
         {error ? <Alert variant="error">{error}</Alert> : null}
         {blockedReason ? <Alert variant="warning">{blockedReason}</Alert> : null}
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-          <div className="space-y-4">
+          <div className="space-y-4 pb-28 lg:pb-0">
             <div className={`${cardClass} p-5`}>
-              <h2 className="text-sm font-semibold text-oak-navy">Certificate details</h2>
+              <h2 className={sectionTitleClass}>Certificate details</h2>
+              <p className="mt-1 text-xs text-oak-muted">
+                Choose the customer, site scope, and calibration dates before uploading the PDF.
+              </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label htmlFor="company_id" className="block text-xs font-medium text-zinc-600">
-                    Customer <span className="text-red-600">*</span>
+                  <label htmlFor="company_id" className={labelClass}>
+                    Customer <span className="text-oak-danger">*</span>
                   </label>
                   {lockCompany && selectedCompany ? (
                     <>
                       <input type="hidden" name="company_id" value={selectedCompany.id} />
-                      <div className="mt-1 rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+                      <div className="mt-1 rounded-lg border border-oak-border bg-slate-50 px-3 py-2 text-sm text-oak-charcoal">
                         {selectedCompany.companyName} ({selectedCompany.customerIdReadable})
                       </div>
                     </>
@@ -221,20 +240,20 @@ export function CertificateUploadForm({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="site_id" className="block text-xs font-medium text-zinc-600">
+                  <label htmlFor="site_id" className={labelClass}>
                     Site
                   </label>
                   {lockSite && selectedSite ? (
                     <>
                       <input type="hidden" name="site_id" value={selectedSite.id} />
-                      <div className="mt-1 rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+                      <div className="mt-1 rounded-lg border border-oak-border bg-slate-50 px-3 py-2 text-sm text-oak-charcoal">
                         {selectedSite.siteName}
                       </div>
                     </>
                   ) : lockSite ? (
                     <>
                       <input type="hidden" name="site_id" value="" />
-                      <div className="mt-1 rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+                      <div className="mt-1 rounded-lg border border-oak-border bg-slate-50 px-3 py-2 text-sm text-oak-charcoal">
                         Company-level certificate
                       </div>
                     </>
@@ -259,13 +278,13 @@ export function CertificateUploadForm({
                 </div>
 
                 <div>
-                  <label htmlFor="document_type" className="block text-xs font-medium text-zinc-600">
-                    Document type <span className="text-red-600">*</span>
+                  <label htmlFor="document_type" className={labelClass}>
+                    Document type <span className="text-oak-danger">*</span>
                   </label>
                   {lockDocumentType && documentType ? (
                     <>
                       <input type="hidden" name="document_type" value={documentType} />
-                      <div className="mt-1 rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+                      <div className="mt-1 rounded-lg border border-oak-border bg-slate-50 px-3 py-2 text-sm text-oak-charcoal">
                         {CERTIFICATE_DOCUMENT_TYPES.find((item) => item.value === documentType)?.label ??
                           documentType}
                       </div>
@@ -290,8 +309,8 @@ export function CertificateUploadForm({
                 </div>
 
                 <div>
-                  <label htmlFor="issue_date" className="block text-xs font-medium text-zinc-600">
-                    Issue / calibration date <span className="text-red-600">*</span>
+                  <label htmlFor="issue_date" className={labelClass}>
+                    Issue / calibration date <span className="text-oak-danger">*</span>
                   </label>
                   <input
                     id="issue_date"
@@ -305,7 +324,7 @@ export function CertificateUploadForm({
                 </div>
 
                 <div>
-                  <label htmlFor="due_date" className="block text-xs font-medium text-zinc-600">
+                  <label htmlFor="due_date" className={labelClass}>
                     Due / next calibration date
                   </label>
                   <input
@@ -321,7 +340,7 @@ export function CertificateUploadForm({
                 <div>
                   <label
                     htmlFor="display_title_override"
-                    className="block text-xs font-medium text-zinc-600"
+                    className={labelClass}
                   >
                     Optional display title override
                   </label>
@@ -335,27 +354,30 @@ export function CertificateUploadForm({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="file" className="block text-xs font-medium text-zinc-600">
-                    PDF file <span className="text-red-600">*</span>
+                  <span className={labelClass}>
+                    PDF file <span className="text-oak-danger">*</span>
+                  </span>
+                  <label htmlFor="file" className={fileInputClass}>
+                    <span className="text-sm font-medium text-oak-navy">
+                      {fileName ? fileName : "Tap to choose a PDF"}
+                    </span>
+                    <span className="mt-1 text-xs text-oak-muted">PDF only · maximum 20 MB</span>
+                    <input
+                      id="file"
+                      name="file"
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      required
+                      onChange={(event) =>
+                        setFileName(event.target.files?.[0]?.name ?? "")
+                      }
+                      className="sr-only"
+                    />
                   </label>
-                  <input
-                    id="file"
-                    name="file"
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    required
-                    onChange={(event) =>
-                      setFileName(event.target.files?.[0]?.name ?? "")
-                    }
-                    className="mt-1 block w-full text-sm text-zinc-700 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white dark:text-zinc-300 dark:file:bg-zinc-100 dark:file:text-zinc-900"
-                  />
-                  <p className="mt-1 text-xs text-zinc-500">
-                    PDF only, maximum 20 MB.
-                  </p>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="tags" className="block text-xs font-medium text-zinc-600">
+                  <label htmlFor="tags" className={labelClass}>
                     Tags
                   </label>
                   <input
@@ -369,7 +391,7 @@ export function CertificateUploadForm({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="notes" className="block text-xs font-medium text-zinc-600">
+                  <label htmlFor="notes" className={labelClass}>
                     Notes
                   </label>
                   <textarea
@@ -384,11 +406,16 @@ export function CertificateUploadForm({
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button type="submit" variant="primary" disabled={pending || Boolean(blockedReason)}>
+            <div className="fixed inset-x-0 bottom-0 z-30 flex flex-col gap-3 border-t border-oak-border bg-white/95 p-4 backdrop-blur-md sm:flex-row lg:relative lg:inset-auto lg:z-auto lg:border-0 lg:bg-transparent lg:p-0">
+              <Button
+                type="submit"
+                variant="primary"
+                className="min-h-11 flex-1"
+                disabled={pending || Boolean(blockedReason)}
+              >
                 {pending ? "Publishing…" : submitLabel}
               </Button>
-              <Button href={cancelHref} variant="secondary">
+              <Button href={cancelHref} variant="secondary" className="min-h-11 flex-1 sm:flex-initial">
                 Cancel
               </Button>
             </div>
@@ -411,34 +438,34 @@ export function CertificateUploadForm({
             ) : null}
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs uppercase text-zinc-500">Customer</dt>
-                <dd className="text-zinc-900 dark:text-zinc-100">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Customer</dt>
+                <dd className="text-oak-charcoal">
                   {selectedCompany
                     ? `${selectedCompany.customerIdReadable} - ${selectedCompany.companyName}`
                     : "Select a customer"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase text-zinc-500">Site scope</dt>
-                <dd className="text-zinc-900 dark:text-zinc-100">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Site scope</dt>
+                <dd className="text-oak-charcoal">
                   {selectedSite?.siteName ?? "Company-level certificate"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase text-zinc-500">Generated display title</dt>
-                <dd className="text-zinc-900 dark:text-zinc-100">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Generated display title</dt>
+                <dd className="text-oak-charcoal">
                   {generatedPreview?.displayTitle ?? "Choose document type and issue date"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase text-zinc-500">Generated download filename</dt>
-                <dd className="break-words text-zinc-900 dark:text-zinc-100">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Generated download filename</dt>
+                <dd className="break-words text-oak-charcoal">
                   {generatedPreview?.downloadFileName ?? "Choose document type and issue date"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase text-zinc-500">Uploaded file</dt>
-                <dd className="break-words text-zinc-900 dark:text-zinc-100">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Uploaded file</dt>
+                <dd className="break-words text-oak-charcoal">
                   {fileName || "No file selected"}
                 </dd>
               </div>
@@ -449,3 +476,4 @@ export function CertificateUploadForm({
     </div>
   );
 }
+

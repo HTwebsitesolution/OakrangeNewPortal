@@ -31,7 +31,11 @@ export function MetricCard({
     </>
   );
 
-  const className = cn(cardClass, "border-l-4 p-5 transition hover:shadow-md", accentBar);
+  const className = cn(
+    cardClass,
+    "border-l-4 p-5 transition hover:-translate-y-0.5 hover:shadow-md",
+    accentBar
+  );
 
   if (href) {
     return (

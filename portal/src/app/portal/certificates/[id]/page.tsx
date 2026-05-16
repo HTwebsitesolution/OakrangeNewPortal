@@ -6,7 +6,12 @@ import { getCertificateDocumentTypeLabel } from "@/lib/certificates/document-typ
 import { formatCertificateDate } from "@/lib/certificates/format";
 import { requirePortalSupabase } from "@/lib/auth/require-session";
 import { getPortalCertificateById } from "@/lib/certificates/portal-queries";
+import { PortalCertificateStickyBar } from "@/components/portal/portal-certificate-sticky-bar";
 import { PortalExpiryBadge } from "@/components/portal/portal-expiry-badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { brand } from "@/lib/copy/brand";
+import { cardClass } from "@/lib/ui/classes";
 import type { CertificateDocumentType } from "@/lib/certificates/types";
 
 export default async function PortalCertificateDetailPage({
@@ -20,7 +25,7 @@ export default async function PortalCertificateDetailPage({
 
   if (error) {
     return (
-      <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+      <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
         Could not load this certificate.
       </p>
     );
@@ -34,28 +39,24 @@ export default async function PortalCertificateDetailPage({
   const site = one(certificate.sites);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Link
-          href="/portal/certificates"
-          className="text-sm text-zinc-600 underline dark:text-zinc-400"
-        >
-          Back to certificates
-        </Link>
-        <h1 className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {certificate.display_title}
-        </h1>
-      </div>
+    <div className="space-y-6 pb-28 lg:pb-6">
+      <Link
+        href="/portal/certificates"
+        className="text-sm font-medium text-oak-muted hover:text-oak-orange"
+      >
+        ← {brand.portal.detailBack}
+      </Link>
 
-      <dl className="grid gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-950 sm:grid-cols-2">
+      <PageHeader
+        title={certificate.display_title}
+        description={getCertificateDocumentTypeLabel(
+          certificate.document_type as CertificateDocumentType
+        )}
+      />
+
+      <dl className={`${cardClass} grid gap-4 p-5 text-sm sm:grid-cols-2`}>
         <DetailItem label="Customer" value={company?.company_name ?? "—"} />
         <DetailItem label="Site" value={site?.site_name ?? "Company-level"} />
-        <DetailItem
-          label="Document type"
-          value={getCertificateDocumentTypeLabel(
-            certificate.document_type as CertificateDocumentType
-          )}
-        />
         <DetailItem
           label="Issue / calibration date"
           value={formatCertificateDate(certificate.issue_date)}
@@ -74,22 +75,24 @@ export default async function PortalCertificateDetailPage({
         />
       </dl>
 
-      <div className="flex flex-wrap gap-3">
-        <a
+      <div className="hidden flex-wrap gap-3 lg:flex">
+        <Button
           href={`/api/portal/certificates/${certificate.id}/signed-url?intent=view`}
+          variant="secondary"
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
         >
-          View PDF
-        </a>
-        <a
+          {brand.portal.mobileViewPdf}
+        </Button>
+        <Button
           href={`/api/portal/certificates/${certificate.id}/signed-url?intent=download`}
-          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600"
+          variant="primary"
         >
-          Download PDF
-        </a>
+          {brand.portal.mobileDownload}
+        </Button>
       </div>
+
+      <PortalCertificateStickyBar certificateId={certificate.id} />
     </div>
   );
 }
@@ -103,8 +106,8 @@ function DetailItem({
 }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</dt>
-      <dd className="mt-1 text-zinc-900 dark:text-zinc-100">{value}</dd>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">{label}</dt>
+      <dd className="mt-1 text-oak-charcoal">{value}</dd>
     </div>
   );
 }

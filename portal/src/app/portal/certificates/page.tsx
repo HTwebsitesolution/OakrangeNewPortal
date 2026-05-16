@@ -2,6 +2,7 @@ import { PortalCertificateFiltersForm } from "@/components/portal/portal-certifi
 import { PortalCertificateTable } from "@/components/portal/portal-certificate-table";
 import { Alert } from "@/components/ui/alert";
 import { PageHeader } from "@/components/ui/page-header";
+import { brand } from "@/lib/copy/brand";
 import { requirePortalSupabase } from "@/lib/auth/require-session";
 import {
   listPortalCertificates,
@@ -31,13 +32,14 @@ export default async function PortalCertificatesPage({
     filters.dueDateFrom ||
     filters.dueDateTo
       ? "No certificates match your search or filters."
-      : "No certificates are currently available for your account.";
+      : brand.portal.certificatesEmpty;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       <PageHeader
-        title="Certificates"
-        description="Published certificates you are authorised to access, newest first."
+        eyebrow={brand.portal.dashboardEyebrow}
+        title={brand.portal.certificatesTitle}
+        description={brand.portal.certificatesLead}
       />
 
       <PortalCertificateFiltersForm
