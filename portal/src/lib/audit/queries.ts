@@ -10,6 +10,7 @@ export const AUDIT_ACTION_OPTIONS: Array<{ value: AuditAction; label: string }> 
   { value: "customer_updated", label: "Customer updated" },
   { value: "customer_deactivated", label: "Customer deactivated" },
   { value: "customer_reactivated", label: "Customer reactivated" },
+  { value: "customer_deleted", label: "Customer deleted" },
   { value: "site_created", label: "Site created" },
   { value: "site_updated", label: "Site updated" },
   { value: "site_deactivated", label: "Site deactivated" },

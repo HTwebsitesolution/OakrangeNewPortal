@@ -11,6 +11,7 @@ export type AdminAuditAction =
   | "customer_updated"
   | "customer_deactivated"
   | "customer_reactivated"
+  | "customer_deleted"
   | "certificate_uploaded"
   | "certificate_published"
   | "certificate_viewed_admin"
