@@ -6,16 +6,18 @@
 import { execFileSync } from "node:child_process";
 import process from "node:process";
 
-const PORT = 3000;
+/** Ports a stale `next dev` may hold when 3000 is already taken (CSS/chunk 404s if you use the wrong one). */
+const PORTS = [3000, 3001, 3002];
 
 if (process.platform !== "win32") {
   console.log(
-    `free-dev-port: skipped on ${process.platform}. If port ${PORT} is busy, stop the old process manually before \`next dev\`.`
+    `free-dev-port: skipped on ${process.platform}. Free ports ${PORTS.join(", ")} manually before \`next dev\`.`
   );
   process.exit(0);
 }
 
-const ps = `
+for (const PORT of PORTS) {
+  const ps = `
 $ErrorActionPreference = 'SilentlyContinue'
 $listeners = Get-NetTCPConnection -LocalPort ${PORT} -State Listen
 if (-not $listeners) { Write-Host 'free-dev-port: port ${PORT} is free'; exit 0 }
@@ -27,11 +29,12 @@ foreach ($p in $pids) {
   }
 }
 `
-  .trim()
-  .replace(/\r?\n/g, "; ");
+    .trim()
+    .replace(/\r?\n/g, "; ");
 
-try {
-  execFileSync("powershell.exe", ["-NoProfile", "-Command", ps], { stdio: "inherit" });
-} catch {
-  // Stop-Process / Get-NetTCPConnection may exit non-zero; ignore
+  try {
+    execFileSync("powershell.exe", ["-NoProfile", "-Command", ps], { stdio: "inherit" });
+  } catch {
+    // Stop-Process / Get-NetTCPConnection may exit non-zero; ignore
+  }
 }

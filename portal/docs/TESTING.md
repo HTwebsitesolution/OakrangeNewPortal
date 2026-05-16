@@ -6,7 +6,8 @@ All commands run from `portal/` unless noted. From repo root, use `npm run <scri
 
 - `portal/.env.local` with Supabase URL, anon key, and service role key
 - Migrations applied to your Supabase project
-- For runtime tests: **one** dev server on port 3000 (`npm run dev` or `npm run dev:clean` if port is stuck)
+- For runtime tests: **one** dev server on port 3000 (`npm run dev` or `npm run dev:clean` if port is stuck). Do not leave a second server on 3001 — pages will load without CSS.
+- Phase 9 UI/CSS check (dev server required): `npm run test:phase9:ui`
 - If port 3000 is already in use, stop the other process or set `PHASE6_BASE_URL` / `PHASE7_BASE_URL` to match your server (e.g. `http://127.0.0.1:3001`)
 
 ## Scripts

@@ -2,6 +2,7 @@ import "server-only";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AuthLayout } from "@/components/layout/auth-layout";
 import { LoginShell } from "@/components/login/login-shell";
 import { isSupabaseConfigured } from "@/lib/env";
 import { dashboardPathForRole } from "@/lib/auth/paths";
@@ -19,8 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const sp = await searchParams;
 
   let user: { id: string } | null = null;
-  let profile: Awaited<ReturnType<typeof readAuthForLoginPage>>["profile"] =
-    null;
+  let profile: Awaited<ReturnType<typeof readAuthForLoginPage>>["profile"] = null;
 
   if (supabaseConfigured) {
     const session = await readAuthForLoginPage();
@@ -42,18 +42,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <AuthLayout
+      footer={
+        <Link href="/forgot-password" className="text-sm font-medium text-oak-orange hover:underline">
+          Forgot your password?
+        </Link>
+      }
+    >
       <LoginShell
         supabaseConfigured={supabaseConfigured}
         errorMessage={sp.error}
         accountInactive={accountInactive}
         redirectParam={sp.redirect}
       />
-      <p className="mx-auto max-w-md px-4 pb-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        <Link href="/forgot-password" className="underline underline-offset-2">
-          Forgot your password?
-        </Link>
-      </p>
-    </main>
+    </AuthLayout>
   );
 }

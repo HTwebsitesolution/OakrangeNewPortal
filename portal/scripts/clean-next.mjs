@@ -1,12 +1,22 @@
+import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import process from "node:process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
+if (process.platform === "win32") {
+  try {
+    execFileSync("node", [resolve(root, "scripts/free-dev-port.mjs")], { stdio: "inherit" });
+  } catch {
+    // free-dev-port may exit non-zero; continue cleanup
+  }
+}
+
 console.log(
-  "Stop `next dev` (Ctrl+C) in every terminal before cleaning — otherwise the server can throw ENOENT for .next files on the next request."
+  "Cleaning .next — stop any extra `next dev` terminals if removal fails (EBUSY/EPERM)."
 );
 
 const dirs = [".next", "node_modules/.cache"];

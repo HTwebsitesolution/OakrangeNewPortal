@@ -1,7 +1,8 @@
 import "server-only";
 
+import { AppShell } from "@/components/layout/app-shell";
 import { requirePortalProfile } from "@/lib/auth/require-session";
-import { PortalNav } from "@/components/portal/portal-nav";
+import { PORTAL_NAV_ITEMS } from "@/lib/nav/portal-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,13 @@ export default async function PortalLayout({
   const { profile } = await requirePortalProfile();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <PortalNav profile={profile} />
-      <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>
-    </div>
+    <AppShell
+      items={PORTAL_NAV_ITEMS}
+      profile={profile}
+      homeHref="/portal/dashboard"
+      portalLabel="Certificate Portal"
+    >
+      {children}
+    </AppShell>
   );
 }

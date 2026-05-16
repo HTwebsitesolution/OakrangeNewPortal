@@ -11,6 +11,9 @@ import {
   buildCertificateDownloadFilename,
 } from "@/lib/certificates/format";
 import type { CertificateDocumentType } from "@/lib/certificates/types";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
+import { cardClass, inputClass } from "@/lib/ui/classes";
 
 type CompanyOption = {
   id: string;
@@ -46,10 +49,6 @@ type UploadFormProps = {
   submitLabel?: string;
   helperText?: string | null;
 };
-
-function inputClassName() {
-  return "mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900";
-}
 
 export function CertificateUploadForm({
   apiPath,
@@ -174,32 +173,18 @@ export function CertificateUploadForm({
 
   return (
     <div className="space-y-4">
-      <Link href={backHref} className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
+      <Link href={backHref} className="text-sm font-medium text-oak-orange hover:underline">
         ← Back
       </Link>
       <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
-        {helperText ? (
-          <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            {helperText}
-          </p>
-        ) : null}
-        {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-            {error}
-          </p>
-        ) : null}
-        {blockedReason ? (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
-            {blockedReason}
-          </p>
-        ) : null}
+        {helperText ? <Alert variant="info">{helperText}</Alert> : null}
+        {error ? <Alert variant="error">{error}</Alert> : null}
+        {blockedReason ? <Alert variant="warning">{blockedReason}</Alert> : null}
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
           <div className="space-y-4">
-            <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Certificate details
-              </h2>
+            <div className={`${cardClass} p-5`}>
+              <h2 className="text-sm font-semibold text-oak-navy">Certificate details</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label htmlFor="company_id" className="block text-xs font-medium text-zinc-600">
@@ -222,7 +207,7 @@ export function CertificateUploadForm({
                         setCompanyId(event.target.value);
                         setSiteId("");
                       }}
-                      className={inputClassName()}
+                      className={inputClass}
                     >
                       <option value="">Select a customer</option>
                       {companies.map((company) => (
@@ -259,7 +244,7 @@ export function CertificateUploadForm({
                       name="site_id"
                       value={siteId}
                       onChange={(event) => setSiteId(event.target.value)}
-                      className={inputClassName()}
+                      className={inputClass}
                       disabled={!companyId}
                     >
                       <option value="">Company-level certificate</option>
@@ -292,7 +277,7 @@ export function CertificateUploadForm({
                       required
                       value={documentType}
                       onChange={(event) => setDocumentType(event.target.value)}
-                      className={inputClassName()}
+                      className={inputClass}
                     >
                       <option value="">Select document type</option>
                       {CERTIFICATE_DOCUMENT_TYPES.map((type) => (
@@ -315,7 +300,7 @@ export function CertificateUploadForm({
                     required
                     value={issueDate}
                     onChange={(event) => setIssueDate(event.target.value)}
-                    className={inputClassName()}
+                    className={inputClass}
                   />
                 </div>
 
@@ -329,7 +314,7 @@ export function CertificateUploadForm({
                     type="date"
                     value={dueDate}
                     onChange={(event) => setDueDate(event.target.value)}
-                    className={inputClassName()}
+                    className={inputClass}
                   />
                 </div>
 
@@ -345,7 +330,7 @@ export function CertificateUploadForm({
                     name="display_title_override"
                     value={displayTitleOverride}
                     onChange={(event) => setDisplayTitleOverride(event.target.value)}
-                    className={inputClassName()}
+                    className={inputClass}
                   />
                 </div>
 
@@ -379,7 +364,7 @@ export function CertificateUploadForm({
                     value={tags}
                     onChange={(event) => setTags(event.target.value)}
                     placeholder="ukas, annual, workshop"
-                    className={inputClassName()}
+                    className={inputClass}
                   />
                 </div>
 
@@ -393,34 +378,38 @@ export function CertificateUploadForm({
                     rows={4}
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
-                    className={inputClassName()}
+                    className={inputClass}
                   />
                 </div>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={pending || Boolean(blockedReason)}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
-              >
-                {pending ? "Publishing..." : submitLabel}
-              </button>
-              <Link
-                href={cancelHref}
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600"
-              >
+              <Button type="submit" variant="primary" disabled={pending || Boolean(blockedReason)}>
+                {pending ? "Publishing…" : submitLabel}
+              </Button>
+              <Button href={cancelHref} variant="secondary">
                 Cancel
-              </Link>
+              </Button>
             </div>
           </div>
 
-          <aside className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-              Preview
-            </h2>
-            <dl className="mt-4 space-y-3 text-sm">
+          <aside className={`${cardClass} space-y-4 p-5`}>
+            <h2 className="text-sm font-semibold text-oak-navy">Publish preview</h2>
+            {generatedPreview && selectedCompany ? (
+              <div className="rounded-lg border border-oak-orange/30 bg-orange-50 p-4 text-sm">
+                <p className="font-medium text-oak-navy">You are publishing this certificate to:</p>
+                <p className="mt-2 font-semibold">{selectedCompany.companyName}</p>
+                <p className="text-oak-muted">
+                  {selectedSite?.siteName ?? "Company-level (authorised company users)"}
+                </p>
+                <p className="mt-3 text-xs font-medium uppercase tracking-wide text-oak-muted">
+                  Customers will see
+                </p>
+                <p className="mt-1 font-medium text-oak-charcoal">{generatedPreview.displayTitle}</p>
+              </div>
+            ) : null}
+            <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-xs uppercase text-zinc-500">Customer</dt>
                 <dd className="text-zinc-900 dark:text-zinc-100">

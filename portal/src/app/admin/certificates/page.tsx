@@ -1,6 +1,8 @@
-import Link from "next/link";
 import { CertificateListFiltersForm } from "@/components/admin/certificate-list-filters";
 import { CertificateTable } from "@/components/admin/certificate-table";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { ListPagination } from "@/components/ui/list-pagination";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 import {
@@ -24,22 +26,15 @@ export default async function AdminCertificatesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Certificates
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Admin-only certificate uploads, publishing, history, and secure PDF access.
-          </p>
-        </div>
-        <Link
-          href="/admin/certificates/upload"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Upload certificate
-        </Link>
-      </div>
+      <PageHeader
+        title="Certificates"
+        description="Upload, publish, and manage certificate documents with secure PDF access."
+        actions={
+          <Button href="/admin/certificates/upload" variant="primary">
+            Upload certificate
+          </Button>
+        }
+      />
 
       <CertificateListFiltersForm
         actionPath="/admin/certificates"
@@ -47,11 +42,7 @@ export default async function AdminCertificatesPage({
         filters={filters}
       />
 
-      {error ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
       <CertificateTable
         rows={rows}

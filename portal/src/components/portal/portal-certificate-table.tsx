@@ -5,6 +5,15 @@ import { formatCertificateDate } from "@/lib/certificates/format";
 import type { PortalCertificateRow } from "@/lib/certificates/portal-queries";
 import { PortalCertificateActions } from "@/components/portal/portal-certificate-actions";
 import { PortalExpiryBadge } from "@/components/portal/portal-expiry-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  tableBodyClass,
+  tableClass,
+  tableHeadClass,
+  tableShellClass,
+  tableTdClass,
+  tableThClass,
+} from "@/lib/ui/classes";
 import type { CertificateDocumentType } from "@/lib/certificates/types";
 
 export function PortalCertificateTable({
@@ -15,58 +24,51 @@ export function PortalCertificateTable({
   emptyMessage: string;
 }) {
   if (rows.length === 0) {
-    return (
-      <p className="rounded-xl border border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-zinc-800">
-        {emptyMessage}
-      </p>
-    );
+    return <EmptyState message={emptyMessage} />;
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
-      <table className="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-        <thead className="bg-zinc-50 dark:bg-zinc-900">
+    <div className={tableShellClass}>
+      <table className={tableClass}>
+        <thead className={tableHeadClass}>
           <tr>
-            <th className="px-3 py-3 text-left font-medium text-zinc-600">Certificate</th>
-            <th className="px-3 py-3 text-left font-medium text-zinc-600">Site</th>
-            <th className="px-3 py-3 text-left font-medium text-zinc-600">Status</th>
-            <th className="px-3 py-3 text-left font-medium text-zinc-600">Dates</th>
-            <th className="px-3 py-3 text-left font-medium text-zinc-600">Actions</th>
+            <th className={tableThClass}>Certificate</th>
+            <th className={tableThClass}>Site</th>
+            <th className={tableThClass}>Status</th>
+            <th className={tableThClass}>Dates</th>
+            <th className={tableThClass}>Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-zinc-950">
+        <tbody className={tableBodyClass}>
           {rows.map((row) => {
             const site = one(row.sites);
 
             return (
-              <tr key={row.id}>
-                <td className="px-3 py-3 align-top">
+              <tr key={row.id} className="hover:bg-slate-50/80">
+                <td className={tableTdClass}>
                   <Link
                     href={`/portal/certificates/${row.id}`}
-                    className="font-medium text-zinc-900 hover:underline dark:text-zinc-50"
+                    className="font-medium text-oak-navy hover:text-oak-orange"
                   >
                     {row.display_title}
                   </Link>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-oak-muted">
                     {getCertificateDocumentTypeLabel(
                       row.document_type as CertificateDocumentType
                     )}
                   </p>
                 </td>
-                <td className="px-3 py-3 align-top text-zinc-700 dark:text-zinc-300">
-                  {site?.site_name ?? "Company-level"}
-                </td>
-                <td className="px-3 py-3 align-top">
+                <td className={tableTdClass}>{site?.site_name ?? "Company-level"}</td>
+                <td className={tableTdClass}>
                   <PortalExpiryBadge status="active" dueDate={row.due_date} />
                 </td>
-                <td className="px-3 py-3 align-top text-zinc-700 dark:text-zinc-300">
+                <td className={tableTdClass}>
                   <p>Issue: {formatCertificateDate(row.issue_date)}</p>
-                  <p>
-                    Due:{" "}
-                    {row.due_date ? formatCertificateDate(row.due_date) : "No due date"}
+                  <p className="text-oak-muted">
+                    Due: {row.due_date ? formatCertificateDate(row.due_date) : "No due date"}
                   </p>
                 </td>
-                <td className="px-3 py-3 align-top">
+                <td className={tableTdClass}>
                   <PortalCertificateActions certificateId={row.id} />
                 </td>
               </tr>
@@ -77,6 +79,3 @@ export function PortalCertificateTable({
     </div>
   );
 }
-
-
-

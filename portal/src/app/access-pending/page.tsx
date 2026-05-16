@@ -1,23 +1,20 @@
-import Link from "next/link";
+import { AuthLayout } from "@/components/layout/auth-layout";
+import { Button } from "@/components/ui/button";
+import { cardClass } from "@/lib/ui/classes";
 
 export default function AccessPendingPage() {
   return (
-    <main className="mx-auto max-w-lg px-4 py-20 text-center">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Access not ready
-      </h1>
-      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-        Your account exists, but no portal profile is linked yet. Oakrange must
-        finish setting up your user before you can sign in.
-      </p>
-      <p className="mt-8">
-        <Link
-          href="/login"
-          className="text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
-        >
+    <AuthLayout>
+      <div className={`${cardClass} space-y-4 p-8 text-center`}>
+        <h1 className="text-2xl font-semibold tracking-tight text-oak-navy">Access not ready</h1>
+        <p className="text-sm text-oak-muted">
+          Your account exists, but no portal profile is linked yet. Oakrange must finish setting
+          up your user before you can sign in.
+        </p>
+        <Button href="/login" variant="primary">
           Back to sign in
-        </Link>
-      </p>
-    </main>
+        </Button>
+      </div>
+    </AuthLayout>
   );
 }

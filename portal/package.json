@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "node scripts/clean-next.mjs",
     "dev": "next dev",
-    "dev:clean": "node scripts/clean-next.mjs && node scripts/free-dev-port.mjs && next dev",
+    "dev:clean": "node scripts/clean-next.mjs && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -20,7 +20,9 @@
     "test:phase7": "node scripts/phase7-runtime-verify.mjs",
     "test:security": "node scripts/security-static-verify.mjs",
     "seed:demo": "node scripts/seed-demo-data.mjs",
-    "test:all": "npm run lint && npm run build && npm run test:security && npm run test:rls && npm run test:phase6 && npm run test:phase7"
+    "test:all": "npm run lint && npm run build && npm run test:security && npm run test:rls && npm run test:phase6 && npm run test:phase7",
+    "test:phase9:ui": "node scripts/phase9-ui-nav-verify.mjs",
+    "test:live-login": "node scripts/live-login-check.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -38,6 +40,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.18",
+    "playwright": "^1.52.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

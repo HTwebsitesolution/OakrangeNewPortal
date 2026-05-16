@@ -1,28 +1,27 @@
-import Link from "next/link";
-
-const actionClass =
-  "inline-flex items-center rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-900";
+import { Button } from "@/components/ui/button";
 
 export function PortalCertificateActions({ certificateId }: { certificateId: string }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <Link href={`/portal/certificates/${certificateId}`} className={actionClass}>
+      <Button href={`/portal/certificates/${certificateId}`} variant="secondary" className="px-3 py-1.5">
         Details
-      </Link>
-      <a
+      </Button>
+      <Button
         href={`/api/portal/certificates/${certificateId}/signed-url?intent=view`}
+        variant="secondary"
+        className="px-3 py-1.5"
         target="_blank"
         rel="noopener noreferrer"
-        className={actionClass}
       >
         View PDF
-      </a>
-      <a
+      </Button>
+      <Button
         href={`/api/portal/certificates/${certificateId}/signed-url?intent=download`}
-        className={`${actionClass} bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200`}
+        variant="primary"
+        className="px-3 py-1.5"
       >
         Download
-      </a>
+      </Button>
     </div>
   );
 }

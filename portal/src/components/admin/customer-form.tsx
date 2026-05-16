@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
+import { cn } from "@/lib/ui/cn";
 import {
   createCustomerAction,
   updateCustomerAction,
@@ -9,6 +9,8 @@ import {
 } from "@/actions/admin/customers";
 import { COMPANY_STATUSES } from "@/lib/admin/validation";
 import { FormFlash } from "@/components/admin/form-flash";
+import { Button } from "@/components/ui/button";
+import { cardClass, inputClass, labelClass } from "@/lib/ui/classes";
 
 export type CustomerFormValues = {
   company_name: string;
@@ -61,40 +63,40 @@ export function CustomerForm({
   );
 
   return (
-    <form action={formAction} className="max-w-xl space-y-4">
+    <form action={formAction} className={cn(cardClass, "max-w-xl space-y-4 p-6")}>
       <FormFlash state={state} />
       {customerIdReadable ? (
         <div>
-          <label className="block text-xs font-medium text-zinc-500">Customer ID</label>
-          <p className="text-sm text-zinc-900 dark:text-zinc-100">{customerIdReadable}</p>
+          <label className={labelClass}>Customer ID</label>
+          <p className="text-sm text-oak-charcoal">{customerIdReadable}</p>
         </div>
       ) : null}
       <div>
-        <label htmlFor="company_name" className="block text-xs font-medium text-zinc-600">
-          Company name <span className="text-red-600">*</span>
+        <label htmlFor="company_name" className={labelClass}>
+          Company name <span className="text-oak-danger">*</span>
         </label>
         <input
           id="company_name"
           name="company_name"
           required
           defaultValue={merged.company_name}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={inputClass}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="primary_contact_name" className="block text-xs font-medium text-zinc-600">
+          <label htmlFor="primary_contact_name" className={labelClass}>
             Primary contact name
           </label>
           <input
             id="primary_contact_name"
             name="primary_contact_name"
             defaultValue={merged.primary_contact_name}
-            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="primary_contact_email" className="block text-xs font-medium text-zinc-600">
+          <label htmlFor="primary_contact_email" className={labelClass}>
             Primary contact email
           </label>
           <input
@@ -102,76 +104,76 @@ export function CustomerForm({
             name="primary_contact_email"
             type="email"
             defaultValue={merged.primary_contact_email}
-            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+            className={inputClass}
           />
         </div>
       </div>
       <div>
-        <label htmlFor="phone" className="block text-xs font-medium text-zinc-600">
+        <label htmlFor="phone" className={labelClass}>
           Phone
         </label>
         <input
           id="phone"
           name="phone"
           defaultValue={merged.phone}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={inputClass}
         />
       </div>
       <div>
-        <label htmlFor="address_line_1" className="block text-xs font-medium text-zinc-600">
+        <label htmlFor="address_line_1" className={labelClass}>
           Address line 1
         </label>
         <input
           id="address_line_1"
           name="address_line_1"
           defaultValue={merged.address_line_1}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={inputClass}
         />
       </div>
       <div>
-        <label htmlFor="address_line_2" className="block text-xs font-medium text-zinc-600">
+        <label htmlFor="address_line_2" className={labelClass}>
           Address line 2
         </label>
         <input
           id="address_line_2"
           name="address_line_2"
           defaultValue={merged.address_line_2}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={inputClass}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="town_city" className="block text-xs font-medium text-zinc-600">
+          <label htmlFor="town_city" className={labelClass}>
             Town / city
           </label>
           <input
             id="town_city"
             name="town_city"
             defaultValue={merged.town_city}
-            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="postcode" className="block text-xs font-medium text-zinc-600">
+          <label htmlFor="postcode" className={labelClass}>
             Postcode
           </label>
           <input
             id="postcode"
             name="postcode"
             defaultValue={merged.postcode}
-            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+            className={inputClass}
           />
         </div>
       </div>
       <div>
-        <label htmlFor="status" className="block text-xs font-medium text-zinc-600">
+        <label htmlFor="status" className={labelClass}>
           Status
         </label>
         <select
           id="status"
           name="status"
           defaultValue={merged.status}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={inputClass}
         >
           {COMPANY_STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -181,7 +183,7 @@ export function CustomerForm({
         </select>
       </div>
       <div>
-        <label htmlFor="notes" className="block text-xs font-medium text-zinc-600">
+        <label htmlFor="notes" className={labelClass}>
           Notes
         </label>
         <textarea
@@ -189,28 +191,21 @@ export function CustomerForm({
           name="notes"
           rows={4}
           defaultValue={merged.notes}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={inputClass}
         />
       </div>
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
-        >
+        <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : mode === "create" ? "Create customer" : "Save changes"}
-        </button>
+        </Button>
         {companyId ? (
-          <Link
-            href={`/admin/customers/${companyId}`}
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600"
-          >
+          <Button href={`/admin/customers/${companyId}`} variant="secondary">
             Cancel
-          </Link>
+          </Button>
         ) : (
-          <Link href="/admin/customers" className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600">
+          <Button href="/admin/customers" variant="secondary">
             Cancel
-          </Link>
+          </Button>
         )}
       </div>
     </form>

@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --oak-navy: #0f172a;
+  --oak-charcoal: #111827;
+  --oak-orange: #f97316;
+  --oak-amber: #f59e0b;
+  --oak-bg: #f8fafc;
+  --oak-card: #ffffff;
+  --oak-border: #e5e7eb;
+  --oak-success: #16a34a;
+  --oak-warning: #d97706;
+  --oak-danger: #dc2626;
+  --oak-muted: #64748b;
+  --background: var(--oak-bg);
+  --foreground: var(--oak-charcoal);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-oak-navy: var(--oak-navy);
+  --color-oak-charcoal: var(--oak-charcoal);
+  --color-oak-orange: var(--oak-orange);
+  --color-oak-amber: var(--oak-amber);
+  --color-oak-bg: var(--oak-bg);
+  --color-oak-card: var(--oak-card);
+  --color-oak-border: var(--oak-border);
+  --color-oak-success: var(--oak-success);
+  --color-oak-warning: var(--oak-warning);
+  --color-oak-danger: var(--oak-danger);
+  --color-oak-muted: var(--oak-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--oak-bg);
+  color: var(--oak-charcoal);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

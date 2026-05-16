@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { MetricCard } from "@/components/ui/metric-card";
+import { PageHeader } from "@/components/ui/page-header";
+import { cardClass } from "@/lib/ui/classes";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 import { isCertificateExpiringSoon, startOfUtcDay } from "@/lib/certificates/format";
 
@@ -65,85 +69,83 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Admin dashboard</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Manage customers, certificates, users, and review activity. Use{" "}
-          <Link href="/admin/customers" className="font-medium underline">
-            Customers
-          </Link>{" "}
-          to search by company name or ID.
-        </p>
-      </div>
+      <PageHeader
+        title="Admin dashboard"
+        description="Operational overview — customers, certificates, users, and activity."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button href="/admin/customers/new" variant="secondary">
+              Add customer
+            </Button>
+            <Button href="/admin/certificates/upload" variant="primary">
+              Upload certificate
+            </Button>
+            <Button href="/admin/audit-logs" variant="secondary">
+              Audit logs
+            </Button>
+          </div>
+        }
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active customers" value={ac} href="/admin/customers" />
-        <StatCard label="Active sites" value={as} href="/admin/sites" />
-        <StatCard label="Users" value={tu} href="/admin/users" />
-        <StatCard label="Certificate documents" value={tc} href="/admin/certificates" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <MetricCard label="Customers" value={ac} href="/admin/customers" />
+        <MetricCard label="Sites" value={as} href="/admin/sites" />
+        <MetricCard label="Users" value={tu} href="/admin/users" />
+        <MetricCard label="Certificates" value={tc} href="/admin/certificates" />
+        <MetricCard
+          label="Expiring soon"
+          value={expiringRows.length}
+          href="/admin/expiring-soon"
+          accent="warning"
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            Recently created customers
-          </h2>
-          <ul className="mt-3 space-y-2 text-sm">
+        <Panel title="Recently created customers" href="/admin/customers">
+          <ul className="space-y-2 text-sm">
             {(recentCompanies.data ?? []).map((c) => (
               <li key={c.id} className="flex justify-between gap-2">
                 <Link
                   href={`/admin/customers/${c.id}`}
-                  className="font-medium text-zinc-800 hover:underline dark:text-zinc-100"
+                  className="font-medium text-oak-navy hover:text-oak-orange"
                 >
                   {c.company_name}
                 </Link>
-                <span className="shrink-0 text-xs text-zinc-500">{c.customer_id_readable}</span>
+                <span className="shrink-0 text-xs text-oak-muted">{c.customer_id_readable}</span>
               </li>
             ))}
             {(recentCompanies.data ?? []).length === 0 ? (
-              <li className="text-zinc-500">No customers yet.</li>
+              <li className="text-oak-muted">No customers yet.</li>
             ) : null}
           </ul>
-        </div>
+        </Panel>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            Recently created users
-          </h2>
-          <ul className="mt-3 space-y-2 text-sm">
+        <Panel title="Recently created users" href="/admin/users">
+          <ul className="space-y-2 text-sm">
             {(recentProfiles.data ?? []).map((p) => (
               <li key={p.id} className="flex flex-wrap justify-between gap-2">
                 <Link
                   href={`/admin/users/${p.id}`}
-                  className="font-medium text-zinc-800 hover:underline dark:text-zinc-100"
+                  className="font-medium text-oak-navy hover:text-oak-orange"
                 >
                   {p.email}
                 </Link>
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-oak-muted">
                   {p.role}
                   {!p.is_active ? " · inactive" : ""}
                 </span>
               </li>
             ))}
             {(recentProfiles.data ?? []).length === 0 ? (
-              <li className="text-zinc-500">No users yet.</li>
+              <li className="text-oak-muted">No users yet.</li>
             ) : null}
           </ul>
-        </div>
+        </Panel>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Recent uploads</h2>
-            <Link
-              href="/admin/certificates"
-              className="text-xs font-medium text-zinc-700 underline dark:text-zinc-300"
-            >
-              View all
-            </Link>
-          </div>
-          <ul className="mt-3 space-y-2 text-sm">
+        <Panel title="Recent uploads" href="/admin/certificates">
+          <ul className="space-y-2 text-sm">
             {(recentCertificates.data ?? []).map((cert) => {
               const company = Array.isArray(cert.companies)
                 ? cert.companies[0]
@@ -153,11 +155,11 @@ export default async function AdminDashboardPage() {
                 <li key={cert.id}>
                   <Link
                     href={`/admin/certificates/${cert.id}`}
-                    className="font-medium text-zinc-800 hover:underline dark:text-zinc-100"
+                    className="font-medium text-oak-navy hover:text-oak-orange"
                   >
                     {cert.display_title}
                   </Link>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-oak-muted">
                     {company?.company_name ?? "—"}
                     {site?.site_name ? ` · ${site.site_name}` : ""} · {cert.status}
                     {!cert.published_at ? " · draft" : ""}
@@ -166,22 +168,13 @@ export default async function AdminDashboardPage() {
               );
             })}
             {(recentCertificates.data ?? []).length === 0 ? (
-              <li className="text-zinc-500">No certificates uploaded yet.</li>
+              <li className="text-oak-muted">No certificates uploaded yet.</li>
             ) : null}
           </ul>
-        </div>
+        </Panel>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Expiring soon</h2>
-            <Link
-              href="/admin/expiring-soon"
-              className="text-xs font-medium text-zinc-700 underline dark:text-zinc-300"
-            >
-              View list
-            </Link>
-          </div>
-          <ul className="mt-3 space-y-2 text-sm">
+        <Panel title="Certificates needing attention" href="/admin/expiring-soon">
+          <ul className="space-y-2 text-sm">
             {expiringRows.map((cert) => {
               const company = Array.isArray(cert.companies)
                 ? cert.companies[0]
@@ -190,51 +183,44 @@ export default async function AdminDashboardPage() {
                 <li key={cert.id}>
                   <Link
                     href={`/admin/certificates/${cert.id}`}
-                    className="font-medium text-zinc-800 hover:underline dark:text-zinc-100"
+                    className="font-medium text-oak-navy hover:text-oak-orange"
                   >
                     {cert.display_title}
                   </Link>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-oak-muted">
                     {company?.company_name ?? "—"} · due {cert.due_date}
                   </p>
                 </li>
               );
             })}
             {expiringRows.length === 0 ? (
-              <li className="text-zinc-500">No certificates due in the next 30 days.</li>
+              <li className="text-oak-muted">No certificates due in the next 30 days.</li>
             ) : null}
           </ul>
-        </div>
+        </Panel>
       </div>
-
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        <Link href="/admin/audit-logs" className="font-medium underline">
-          Audit logs
-        </Link>{" "}
-        record certificate views, downloads, and admin changes.
-      </p>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
+function Panel({
+  title,
   href,
+  children,
 }: {
-  label: string;
-  value: number;
+  title: string;
   href: string;
+  children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
-    >
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
-        {value}
-      </p>
-    </Link>
+    <div className={`${cardClass} p-5`}>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-oak-navy">{title}</h2>
+        <Link href={href} className="text-xs font-medium text-oak-orange hover:underline">
+          View all
+        </Link>
+      </div>
+      {children}
+    </div>
   );
 }
