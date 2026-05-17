@@ -19,11 +19,11 @@ export function Alert({
   role?: "alert" | "status";
 }) {
   return (
-    <p
+    <div
       role={role}
       className={cn("rounded-lg border px-4 py-3 text-sm", variants[variant], className)}
     >
       {children}
-    </p>
+    </div>
   );
 }

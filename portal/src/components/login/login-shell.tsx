@@ -11,6 +11,10 @@ import { logAuthAudit } from "@/lib/audit/log";
 import { dashboardPathForRole } from "@/lib/auth/paths";
 import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 import type { SessionProfile } from "@/types/profile";
+import { brand } from "@/lib/copy/brand";
+import { LoginSupportInfo } from "@/components/login/login-page-chrome";
+
+const login = brand.auth.login;
 
 type LoginShellProps = {
   supabaseConfigured: boolean;
@@ -119,11 +123,13 @@ export function LoginShell({
 
   return (
     <div className="space-y-6">
-      <header>
-        <h2 className="text-2xl font-semibold tracking-tight text-oak-navy">Welcome back</h2>
-        <p className="mt-1 text-sm text-oak-muted">
-          Sign in with the email and password provided by Oakrange Engineering.
+      <header className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-oak-orange">
+          {login.portalEyebrow}
         </p>
+        <h2 className="text-2xl font-semibold tracking-tight text-oak-navy">{login.welcomeTitle}</h2>
+        <p className="text-sm leading-relaxed text-oak-muted">{login.welcomeLead}</p>
+        <p className="text-sm font-medium text-oak-navy">{login.signInPrompt}</p>
       </header>
 
       {accountInactive ? (
@@ -168,8 +174,9 @@ export function LoginShell({
       >
         <div>
           <label htmlFor="email" className={labelClass}>
-            Email
+            Email <span className="font-normal text-oak-muted">(username)</span>
           </label>
+          <p className="mb-1.5 text-xs text-oak-muted">{login.emailHint}</p>
           <input
             id="email"
             name="email"
@@ -178,7 +185,7 @@ export function LoginShell({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={inputClass}
-            placeholder="you@company.com or customer reference"
+            placeholder="you@company.com"
             disabled={!supabaseConfigured || pending}
             required
           />
@@ -222,6 +229,8 @@ export function LoginShell({
           {pending ? "Signing in…" : "Sign in →"}
         </Button>
       </form>
+
+      <LoginSupportInfo />
     </div>
   );
 }

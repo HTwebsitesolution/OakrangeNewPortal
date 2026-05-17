@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <LoginAuthLayout
       footer={
         <Link href="/forgot-password" className="text-sm font-medium text-oak-orange hover:underline">
-          Forgot your password?
+          Lost your password?
         </Link>
       }
     >
