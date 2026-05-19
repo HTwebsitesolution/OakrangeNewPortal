@@ -4,12 +4,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logAdminAudit } from "@/lib/audit/log";
+import {
+  canAssignAdminLevel,
+  canCreateInternalAdmin,
+  canDeactivateAdmin,
+  canEditInternalAdmin,
+} from "@/lib/auth/admin-permissions";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import {
+  parseAdminLevel,
   parseUserRole,
   validateUserForm,
 } from "@/lib/admin/validation";
+import type { AdminLevel } from "@/types/profile";
 
 export type UserActionState = { error?: string; ok?: boolean; tempPassword?: string };
 
@@ -23,6 +31,15 @@ function text(fd: FormData, key: string): string {
 function optionalCompanyId(fd: FormData): string | null {
   const v = text(fd, "company_id");
   return v === "" ? null : v;
+}
+
+function resolveAdminLevelForRole(
+  role: string,
+  formLevel: string,
+  fallback: AdminLevel | null
+): AdminLevel | null {
+  if (role !== "oakrange_admin") return null;
+  return parseAdminLevel(formLevel) ?? fallback ?? "admin";
 }
 
 async function waitForProfileRow(
@@ -98,6 +115,15 @@ export async function createPortalUserAction(
     return { error: "Temporary password must be at least 8 characters." };
   }
 
+  if (role === "oakrange_admin" && !canCreateInternalAdmin(actor)) {
+    return { error: "Only a Super Admin can create internal Oakrange admin accounts." };
+  }
+
+  const admin_level = resolveAdminLevelForRole(role, text(formData, "admin_level"), null);
+  if (role === "oakrange_admin" && admin_level && !canAssignAdminLevel(actor, admin_level)) {
+    return { error: "Only a Super Admin can assign the Super Admin level." };
+  }
+
   const { data: created, error: createErr } = await service.auth.admin.createUser({
     email,
     password: tempPassword,
@@ -129,6 +155,7 @@ export async function createPortalUserAction(
       email,
       full_name: full_name || email,
       role,
+      admin_level,
       company_id: finalCompanyId,
       is_active: true,
     })
@@ -149,11 +176,16 @@ export async function createPortalUserAction(
   const { error: auditErr } = await logAdminAudit(supabase, {
     actorProfileId: actor.id,
     actorRole: actor.role,
-    action: "user_created",
+    action: role === "oakrange_admin" ? "internal_admin_created" : "user_created",
     entityType: "profile",
     entityId: profileRow.id,
     companyId: finalCompanyId,
-    metadata: { email, role, full_name: full_name || email },
+    metadata: {
+      email,
+      role,
+      full_name: full_name || email,
+      ...(admin_level ? { admin_level } : {}),
+    },
   });
   if (auditErr) {
     console.warn("Audit log (user create) failed:", auditErr.message);
@@ -199,11 +231,32 @@ export async function updatePortalUserAction(
 
   const { data: existing, error: exErr } = await supabase
     .from("profiles")
-    .select("id, auth_user_id, is_active, role, company_id, email")
+    .select("id, auth_user_id, is_active, role, admin_level, company_id, email")
     .eq("id", profileId)
     .maybeSingle();
 
   if (exErr || !existing) return { error: "User not found." };
+
+  const targetIsInternal = existing.role === "oakrange_admin";
+  const promotingToInternal = role === "oakrange_admin";
+
+  if ((targetIsInternal || promotingToInternal) && !canEditInternalAdmin(actor)) {
+    return { error: "Only a Super Admin can manage internal Oakrange admin accounts." };
+  }
+
+  if (!is_active && existing.is_active && !canDeactivateAdmin(actor, existing)) {
+    return { error: "You cannot deactivate this account." };
+  }
+
+  const admin_level = resolveAdminLevelForRole(
+    role,
+    text(formData, "admin_level"),
+    existing.admin_level as AdminLevel | null
+  );
+
+  if (role === "oakrange_admin" && admin_level && !canAssignAdminLevel(actor, admin_level)) {
+    return { error: "Only a Super Admin can assign the Super Admin level." };
+  }
 
   const finalCompanyId = role === "oakrange_admin" ? null : company_id;
 
@@ -235,6 +288,7 @@ export async function updatePortalUserAction(
       email,
       full_name: full_name || email,
       role,
+      admin_level,
       company_id: finalCompanyId,
       is_active,
     })
@@ -261,11 +315,20 @@ export async function updatePortalUserAction(
   const becameInactive = existing.is_active && !is_active;
   const becameActive = !existing.is_active && is_active;
   const roleChanged = existing.role !== role;
+  const levelChanged =
+    existing.role === "oakrange_admin" &&
+    role === "oakrange_admin" &&
+    existing.admin_level !== admin_level;
 
-  let auditAction: "user_deactivated" | "user_reactivated" | "user_role_changed" | "user_updated" =
-    "user_updated";
+  let auditAction:
+    | "user_deactivated"
+    | "user_reactivated"
+    | "user_role_changed"
+    | "user_updated"
+    | "internal_admin_level_changed" = "user_updated";
   if (becameInactive) auditAction = "user_deactivated";
   else if (becameActive) auditAction = "user_reactivated";
+  else if (levelChanged) auditAction = "internal_admin_level_changed";
   else if (roleChanged) auditAction = "user_role_changed";
 
   const { error: auditErr } = await logAdminAudit(supabase, {
@@ -279,7 +342,11 @@ export async function updatePortalUserAction(
       email,
       role,
       is_active,
+      ...(admin_level ? { admin_level } : {}),
       ...(roleChanged ? { previous_role: existing.role } : {}),
+      ...(levelChanged
+        ? { previous_admin_level: existing.admin_level, admin_level }
+        : {}),
     },
   });
   if (auditErr) {

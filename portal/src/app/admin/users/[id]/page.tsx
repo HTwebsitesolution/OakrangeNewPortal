@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
+import { canEditInternalAdmin } from "@/lib/auth/admin-permissions";
 import { one } from "@/lib/admin/embed";
 
 const UUID_RE =
@@ -14,7 +15,7 @@ export default async function AdminUserDetailPage({
   const { id } = await params;
   if (!UUID_RE.test(id)) notFound();
 
-  const { supabase } = await requireAdminSupabase();
+  const { supabase, profile: actor } = await requireAdminSupabase();
   const { data: p } = await supabase
     .from("profiles")
     .select("*, companies(company_name)")
@@ -40,16 +41,21 @@ export default async function AdminUserDetailPage({
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">{p.email}</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             {p.full_name} · {p.role}
+            {p.role === "oakrange_admin" && p.admin_level
+              ? ` · ${p.admin_level === "super_admin" ? "Super Admin" : "Admin"}`
+              : ""}
             {!p.is_active ? " · inactive" : ""}
           </p>
           <p className="mt-1 text-sm text-zinc-500">Company on profile: {co?.company_name ?? "—"}</p>
         </div>
-        <Link
-          href={`/admin/users/${id}/edit`}
-          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600"
-        >
-          Edit user
-        </Link>
+        {p.role !== "oakrange_admin" || canEditInternalAdmin(actor) ? (
+          <Link
+            href={`/admin/users/${id}/edit`}
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600"
+          >
+            Edit user
+          </Link>
+        ) : null}
       </div>
 
       <section>

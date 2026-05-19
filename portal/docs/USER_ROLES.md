@@ -2,10 +2,19 @@
 
 ## oakrange_admin
 
+All internal staff share `role = oakrange_admin` and access `/admin/*`. An additional column `admin_level` controls what they can do **to other admins**:
+
+| `admin_level` | Who | Capabilities |
+|---------------|-----|----------------|
+| `super_admin` | Joseph (`joseph@htwebsolution.com`) | Everything below, plus create/edit/deactivate internal admins and assign levels |
+| `admin` | Luke, office, test admin | Customers, sites, portal users, certificates, audit logs, settings — **not** internal admin accounts |
+
 - Full admin area: customers, sites, users, certificates, audit logs, settings.
 - Upload, publish, replace, void, and archive certificates.
 - View/download any certificate PDF (audited).
-- Manage user access grants (company-wide or per-site).
+- Manage user access grants (company-wide or per-site) for portal users.
+
+Bootstrap: [ADMIN_BOOTSTRAP.md](ADMIN_BOOTSTRAP.md).
 
 ## customer_user
 

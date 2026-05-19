@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
+import { canEditInternalAdmin, isSuperAdmin } from "@/lib/auth/admin-permissions";
+import { creatableRolesForActor } from "@/lib/admin/validation";
 import { UserEditForm } from "@/components/admin/user-edit-form";
 import { AccessGrantsPanel, type AccessRow } from "@/components/admin/access-grants-panel";
 import { one } from "@/lib/admin/embed";
-import type { UserRole } from "@/types/profile";
+import type { AdminLevel, UserRole } from "@/types/profile";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -17,10 +19,25 @@ export default async function AdminUserEditPage({
   const { id } = await params;
   if (!UUID_RE.test(id)) notFound();
 
-  const { supabase } = await requireAdminSupabase();
+  const { supabase, profile: actor } = await requireAdminSupabase();
 
   const { data: p } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
   if (!p) notFound();
+
+  const targetIsInternalAdmin = p.role === "oakrange_admin";
+  if (targetIsInternalAdmin && !canEditInternalAdmin(actor)) {
+    return (
+      <div className="space-y-6">
+        <Link href={`/admin/users/${id}`} className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
+          ← User
+        </Link>
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Edit user</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Only a Super Admin can edit internal Oakrange admin accounts.
+        </p>
+      </div>
+    );
+  }
 
   const [{ data: companies }, { data: sites }, { data: accessRows }] = await Promise.all([
     supabase.from("companies").select("id, company_name").order("company_name"),
@@ -54,9 +71,13 @@ export default async function AdminUserEditPage({
         defaultEmail={p.email}
         defaultFullName={p.full_name}
         defaultRole={p.role as UserRole}
+        defaultAdminLevel={(p.admin_level as AdminLevel | null) ?? null}
         defaultCompanyId={p.company_id}
         defaultIsActive={p.is_active}
         companies={companies ?? []}
+        creatableRoles={creatableRolesForActor(actor)}
+        actorIsSuperAdmin={isSuperAdmin(actor)}
+        targetIsInternalAdmin={targetIsInternalAdmin}
       />
 
       <section className="border-t border-zinc-200 pt-8 dark:border-zinc-800">

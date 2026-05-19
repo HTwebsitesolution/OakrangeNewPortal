@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SessionProfile } from "@/types/profile";
 
 const PROFILE_COLUMNS =
-  "id, auth_user_id, full_name, email, role, company_id, is_active" as const;
+  "id, auth_user_id, full_name, email, role, admin_level, company_id, is_active" as const;
 
 export async function fetchProfileByAuthUserId(
   supabase: SupabaseClient,

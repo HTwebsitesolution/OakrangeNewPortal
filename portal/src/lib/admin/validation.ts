@@ -1,4 +1,5 @@
-import type { UserRole } from "@/types/profile";
+import { isSuperAdmin } from "@/lib/auth/admin-permissions";
+import type { AdminLevel, SessionProfile, UserRole } from "@/types/profile";
 
 export type CompanyStatus = "active" | "inactive";
 export type SiteStatus = "active" | "inactive";
@@ -26,6 +27,19 @@ export function parseUserRole(v: string | null | undefined): UserRole | null {
     return v;
   }
   return null;
+}
+
+export function parseAdminLevel(v: string | null | undefined): AdminLevel | null {
+  if (v === "super_admin" || v === "admin") return v;
+  return null;
+}
+
+export const ADMIN_LEVELS: AdminLevel[] = ["super_admin", "admin"];
+
+/** Roles an actor may assign when creating or editing users. */
+export function creatableRolesForActor(actor: SessionProfile): UserRole[] {
+  if (isSuperAdmin(actor)) return USER_ROLES;
+  return USER_ROLES.filter((r) => r !== "oakrange_admin");
 }
 
 export function validateCompanyForm(data: {

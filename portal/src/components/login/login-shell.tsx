@@ -75,7 +75,7 @@ export function LoginShell({
 
     const { data: profileRow, error: profileError } = await supabase
       .from("profiles")
-      .select("id, auth_user_id, full_name, email, role, company_id, is_active")
+      .select("id, auth_user_id, full_name, email, role, admin_level, company_id, is_active")
       .eq("auth_user_id", user.id)
       .maybeSingle();
 

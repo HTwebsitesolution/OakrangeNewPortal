@@ -3,22 +3,28 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { createPortalUserAction, type UserActionState } from "@/actions/admin/users";
-import { USER_ROLES } from "@/lib/admin/validation";
+import { ADMIN_LEVELS } from "@/lib/admin/validation";
 import { FormFlash } from "@/components/admin/form-flash";
-import type { UserRole } from "@/types/profile";
+import type { AdminLevel, UserRole } from "@/types/profile";
 
 type CompanyOption = { id: string; company_name: string };
 
 export function UserCreateForm({
   companies,
   defaultCompanyId,
+  creatableRoles,
+  actorIsSuperAdmin,
 }: {
   companies: CompanyOption[];
   defaultCompanyId?: string | null;
+  creatableRoles: UserRole[];
+  actorIsSuperAdmin: boolean;
 }) {
   const [state, formAction, pending] = useActionState(createPortalUserAction, {} as UserActionState);
-  const [role, setRole] = useState<UserRole>("customer_user");
+  const [role, setRole] = useState<UserRole>(creatableRoles[0] ?? "customer_user");
+  const [adminLevel, setAdminLevel] = useState<AdminLevel>("admin");
   const needsCompany = role === "site_manager" || role === "customer_user";
+  const isInternalAdmin = role === "oakrange_admin";
 
   return (
     <div className="max-w-xl space-y-6">
@@ -26,6 +32,11 @@ export function UserCreateForm({
         Creates a real Supabase Auth user and profile using the service role key. Share the
         temporary password securely; invitation email is not wired in this phase.
       </div>
+      {!actorIsSuperAdmin ? (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Internal Oakrange admin accounts can only be created by a Super Admin.
+        </p>
+      ) : null}
       <form action={formAction} className="space-y-4">
         <FormFlash state={state} />
         <div>
@@ -63,13 +74,38 @@ export function UserCreateForm({
             onChange={(e) => setRole(e.target.value as UserRole)}
             className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
           >
-            {USER_ROLES.map((r) => (
+            {creatableRoles.map((r) => (
               <option key={r} value={r}>
                 {r}
               </option>
             ))}
           </select>
         </div>
+        {isInternalAdmin && actorIsSuperAdmin ? (
+          <div>
+            <label htmlFor="admin_level" className="block text-xs font-medium text-zinc-600">
+              Admin level <span className="text-red-600">*</span>
+            </label>
+            <select
+              id="admin_level"
+              name="admin_level"
+              required
+              value={adminLevel}
+              onChange={(e) => setAdminLevel(e.target.value as AdminLevel)}
+              className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+            >
+              {ADMIN_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {level === "super_admin" ? "Super Admin" : "Admin"}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-zinc-500">
+              Super Admins can create and manage other internal admins. Standard Admins manage
+              customers and portal users only.
+            </p>
+          </div>
+        ) : null}
         {needsCompany ? (
           <div>
             <label htmlFor="company_id" className="block text-xs font-medium text-zinc-600">

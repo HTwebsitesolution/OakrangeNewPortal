@@ -9,6 +9,15 @@
 - Auth user without profile → `/access-pending`.
 - Portal users (customer_user, site_manager) cannot access admin routes; admins use `/admin/*`.
 
+## Internal admin levels (Option A)
+
+- `profiles.admin_level` is `super_admin` or `admin` when `role = oakrange_admin`, otherwise `NULL`.
+- **Route access** is unchanged: any active `oakrange_admin` may use `/admin/*`.
+- **Privileged actions** (create/edit/deactivate internal admins, assign `super_admin`) are enforced in server actions and a `BEFORE INSERT OR UPDATE` trigger on `profiles`.
+- Normal admins cannot create `oakrange_admin` users or change another admin’s level or active status.
+- Super Admins cannot deactivate another Super Admin via the app.
+- Bootstrap script: `npm run bootstrap:internal-admins` (service role only; see [ADMIN_BOOTSTRAP.md](ADMIN_BOOTSTRAP.md)).
+
 ## Authorization (RLS)
 
 Row Level Security on Postgres tables is the source of truth for data access.

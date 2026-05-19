@@ -261,6 +261,7 @@ async function main() {
       .from("profiles")
       .update({
         role: spec.role,
+        admin_level: spec.role === "oakrange_admin" ? "admin" : null,
         company_id,
         is_active: !spec.inactive,
         email: spec.email,

@@ -3,9 +3,9 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { updatePortalUserAction, type UserActionState } from "@/actions/admin/users";
-import { USER_ROLES } from "@/lib/admin/validation";
+import { ADMIN_LEVELS } from "@/lib/admin/validation";
 import { FormFlash } from "@/components/admin/form-flash";
-import type { UserRole } from "@/types/profile";
+import type { AdminLevel, UserRole } from "@/types/profile";
 
 type CompanyOption = { id: string; company_name: string };
 
@@ -14,22 +14,33 @@ export function UserEditForm({
   defaultEmail,
   defaultFullName,
   defaultRole,
+  defaultAdminLevel,
   defaultCompanyId,
   defaultIsActive,
   companies,
+  creatableRoles,
+  actorIsSuperAdmin,
+  targetIsInternalAdmin,
 }: {
   profileId: string;
   defaultEmail: string;
   defaultFullName: string;
   defaultRole: UserRole;
+  defaultAdminLevel: AdminLevel | null;
   defaultCompanyId: string | null;
   defaultIsActive: boolean;
   companies: CompanyOption[];
+  creatableRoles: UserRole[];
+  actorIsSuperAdmin: boolean;
+  targetIsInternalAdmin: boolean;
 }) {
   const bound = updatePortalUserAction.bind(null, profileId);
   const [state, formAction, pending] = useActionState(bound, {} as UserActionState);
   const [role, setRole] = useState<UserRole>(defaultRole);
+  const [adminLevel, setAdminLevel] = useState<AdminLevel>(defaultAdminLevel ?? "admin");
   const needsCompany = role === "site_manager" || role === "customer_user";
+  const isInternalAdmin = role === "oakrange_admin";
+  const roleLocked = targetIsInternalAdmin && !actorIsSuperAdmin;
 
   return (
     <form action={formAction} className="max-w-xl space-y-4">
@@ -65,21 +76,53 @@ export function UserEditForm({
         <label htmlFor="role" className="block text-xs font-medium text-zinc-600">
           Role <span className="text-red-600">*</span>
         </label>
-        <select
-          id="role"
-          name="role"
-          required
-          value={role}
-          onChange={(e) => setRole(e.target.value as UserRole)}
-          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-        >
-          {USER_ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
+        {roleLocked ? (
+          <>
+            <input type="hidden" name="role" value={defaultRole} />
+            <p className="mt-1 rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+              {defaultRole}
+            </p>
+          </>
+        ) : (
+          <select
+            id="role"
+            name="role"
+            required
+            value={role}
+            onChange={(e) => setRole(e.target.value as UserRole)}
+            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          >
+            {creatableRoles.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
+      {isInternalAdmin && actorIsSuperAdmin ? (
+        <div>
+          <label htmlFor="admin_level" className="block text-xs font-medium text-zinc-600">
+            Admin level <span className="text-red-600">*</span>
+          </label>
+          <select
+            id="admin_level"
+            name="admin_level"
+            required
+            value={adminLevel}
+            onChange={(e) => setAdminLevel(e.target.value as AdminLevel)}
+            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          >
+            {ADMIN_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                {level === "super_admin" ? "Super Admin" : "Admin"}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : targetIsInternalAdmin && defaultAdminLevel ? (
+        <input type="hidden" name="admin_level" value={defaultAdminLevel} />
+      ) : null}
       {needsCompany ? (
         <div>
           <label htmlFor="company_id" className="block text-xs font-medium text-zinc-600">

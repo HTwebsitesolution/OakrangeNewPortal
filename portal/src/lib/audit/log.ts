@@ -30,6 +30,8 @@ export type AdminAuditAction =
   | "user_deactivated"
   | "user_reactivated"
   | "user_role_changed"
+  | "internal_admin_created"
+  | "internal_admin_level_changed"
   | "password_reset_or_invite_sent"
   | "access_grant_created"
   | "access_grant_removed"
