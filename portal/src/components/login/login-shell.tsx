@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { cardClass, inputClass, labelClass } from "@/lib/ui/classes";
+import { labelClass } from "@/lib/ui/classes";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { logAuthAudit } from "@/lib/audit/log";
 import { dashboardPathForRole } from "@/lib/auth/paths";
@@ -15,6 +15,13 @@ import { brand } from "@/lib/copy/brand";
 import { LoginSupportInfo } from "@/components/login/login-page-chrome";
 
 const login = brand.auth.login;
+
+/** Login-only form panel — not shared with admin/portal forms */
+const loginFormPanelClass =
+  "flex flex-col gap-5 rounded-xl border-2 border-oak-orange/35 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.1)] ring-4 ring-oak-orange/10";
+
+const loginInputClass =
+  "mt-1 w-full rounded-lg border-2 border-oak-border bg-slate-50/50 px-3 py-2.5 text-sm text-oak-charcoal outline-none transition placeholder:text-oak-muted focus:border-oak-orange focus:bg-white focus:ring-4 focus:ring-oak-orange/15 disabled:cursor-not-allowed disabled:opacity-60";
 
 type LoginShellProps = {
   supabaseConfigured: boolean;
@@ -123,7 +130,7 @@ export function LoginShell({
 
   return (
     <div className="space-y-6">
-      <header className="space-y-3">
+      <header className="login-animate-fade-up login-animate-delay-1 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-oak-orange">
           {login.portalEyebrow}
         </p>
@@ -169,9 +176,13 @@ export function LoginShell({
       ) : null}
 
       <form
-        className={`${cardClass} flex flex-col gap-5 p-6`}
+        className={`${loginFormPanelClass} login-animate-form-panel`}
         onSubmit={(e) => void onSubmit(e)}
       >
+        <p className="border-b border-oak-border pb-3 text-sm font-semibold text-oak-navy">
+          Sign in to your account
+        </p>
+
         <div>
           <label htmlFor="email" className={labelClass}>
             Email <span className="font-normal text-oak-muted">(username)</span>
@@ -184,7 +195,7 @@ export function LoginShell({
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
+            className={loginInputClass}
             placeholder="you@company.com"
             disabled={!supabaseConfigured || pending}
             required
@@ -203,7 +214,7 @@ export function LoginShell({
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`${inputClass} pr-10`}
+              className={`${loginInputClass} pr-10`}
               placeholder="Enter your password"
               disabled={!supabaseConfigured || pending}
               required

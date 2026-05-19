@@ -15,7 +15,7 @@ export function LoginAuthLayout({
     <div className="min-h-screen max-lg:flex max-lg:flex-col lg:grid lg:grid-cols-2">
       <LoginHeroPanel />
 
-      <main className="flex min-h-0 flex-1 flex-col bg-oak-bg px-4 py-8 sm:px-8 lg:min-h-screen lg:overflow-y-auto lg:py-10">
+      <main className="login-animate-fade-up flex min-h-0 flex-1 flex-col bg-oak-bg px-4 py-8 sm:px-8 lg:min-h-screen lg:overflow-y-auto lg:py-10">
         <div className="mx-auto w-full max-w-lg">
           <LoginTopBar />
           {children}

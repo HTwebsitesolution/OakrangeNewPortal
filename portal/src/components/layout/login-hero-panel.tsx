@@ -19,25 +19,29 @@ export function LoginHeroPanel() {
       <HeroImage />
 
       <div className="relative z-10 flex h-full min-h-0 flex-col px-5 py-4 max-lg:justify-end lg:justify-between lg:px-10 lg:py-12">
-        <OakrangeLogo variant="light" subtitle={login.portalEyebrow} />
+        <div className="login-animate-fade-up">
+          <OakrangeLogo variant="light" subtitle={login.portalEyebrow} />
+        </div>
 
-        <p className="mt-2 text-lg font-semibold tracking-tight lg:hidden">
+        <p className="login-animate-fade-up login-animate-delay-1 mt-2 text-lg font-semibold tracking-tight lg:hidden">
           Precision calibration.{" "}
           <span className="text-oak-orange">Trusted results.</span>
         </p>
 
         <div className="hidden max-w-md space-y-4 lg:block">
-          <p className="text-xs font-semibold uppercase tracking-widest text-oak-orange">
+          <p className="login-animate-fade-up login-animate-delay-1 text-xs font-semibold uppercase tracking-widest text-oak-orange">
             {login.heroTagline}
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="login-animate-fade-up login-animate-delay-2 text-3xl font-semibold tracking-tight sm:text-4xl">
             Precision calibration.{" "}
             <span className="text-oak-orange">Trusted results.</span>
           </h1>
-          <p className="text-sm leading-relaxed text-slate-200">{login.heroLead}</p>
+          <p className="login-animate-fade-up login-animate-delay-3 text-sm leading-relaxed text-slate-200">
+            {login.heroLead}
+          </p>
         </div>
 
-        <ul className="hidden gap-8 border-t border-white/15 pt-6 lg:flex">
+        <ul className="login-animate-fade-up login-animate-delay-4 hidden gap-8 border-t border-white/15 pt-6 lg:flex">
           {STATS.map(({ value, label }) => (
             <li key={label}>
               <p className="text-2xl font-semibold tabular-nums text-oak-orange">{value}</p>

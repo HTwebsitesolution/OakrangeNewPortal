@@ -67,3 +67,78 @@ body {
     animation: none;
   }
 }
+
+/* Login page entrance animations (login route only — do not reuse elsewhere) */
+@keyframes login-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes login-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes login-form-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 12px 40px rgba(15, 23, 42, 0.1),
+      0 0 0 4px rgba(249, 115, 22, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 16px 44px rgba(15, 23, 42, 0.12),
+      0 0 0 4px rgba(249, 115, 22, 0.14);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-animate-fade-up {
+    animation: login-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .login-animate-fade-in {
+    animation: login-fade-in 0.55s ease-out both;
+  }
+
+  .login-animate-delay-1 {
+    animation-delay: 0.1s;
+  }
+
+  .login-animate-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .login-animate-delay-3 {
+    animation-delay: 0.32s;
+  }
+
+  .login-animate-delay-4 {
+    animation-delay: 0.44s;
+  }
+
+  .login-animate-form-panel {
+    animation:
+      login-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both,
+      login-form-glow 4s ease-in-out 1s infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-animate-fade-up,
+  .login-animate-fade-in,
+  .login-animate-form-panel {
+    animation: none;
+  }
+}

@@ -20,7 +20,7 @@ export function LoginTopBar() {
 
 export function LoginSupportInfo() {
   return (
-    <aside className="space-y-4 border-t border-oak-border pt-6 text-sm text-oak-muted">
+    <aside className="login-animate-fade-in login-animate-delay-3 space-y-4 border-t border-oak-border pt-6 text-sm text-oak-muted">
       <p>
         {login.noCredentials}{" "}
         <Link
@@ -57,7 +57,7 @@ export function LoginPageFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mx-auto mt-8 w-full max-w-md space-y-3 text-center text-xs leading-relaxed text-oak-muted">
+    <footer className="login-animate-fade-in login-animate-delay-4 mx-auto mt-8 w-full max-w-md space-y-3 text-center text-xs leading-relaxed text-oak-muted">
       <p>
         Copyright © {year} {login.companyLegal}
       </p>
