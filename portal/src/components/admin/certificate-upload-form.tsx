@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CustomerSearchSelect } from "@/components/admin/customer-search-select";
+import type { CompanySearchRow } from "@/lib/admin/company-search";
 import {
   CERTIFICATE_DOCUMENT_TYPES,
 } from "@/lib/certificates/document-types";
@@ -54,6 +56,8 @@ type UploadFormProps = {
   lockCompany?: boolean;
   lockSite?: boolean;
   lockDocumentType?: boolean;
+  /** Search-as-you-type customer picker (for large customer lists). */
+  enableCompanySearch?: boolean;
   submitLabel?: string;
   helperText?: string | null;
 };
@@ -75,6 +79,7 @@ export function CertificateUploadForm({
   lockCompany = false,
   lockSite = false,
   lockDocumentType = false,
+  enableCompanySearch = false,
   submitLabel = "Publish Certificate",
   helperText = null,
 }: UploadFormProps) {
@@ -82,6 +87,9 @@ export function CertificateUploadForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState(defaultCompanyId);
+  const [searchedCompany, setSearchedCompany] = useState<CompanySearchRow | null>(null);
+  const [siteOptions, setSiteOptions] = useState<SiteOption[]>(sites);
+  const [sitesLoading, setSitesLoading] = useState(false);
   const [siteId, setSiteId] = useState(defaultSiteId ?? "");
   const [documentType, setDocumentType] = useState<string>(
     defaultDocumentType ?? ""
@@ -95,14 +103,61 @@ export function CertificateUploadForm({
   );
   const [fileName, setFileName] = useState("");
 
-  const selectedCompany = useMemo(
-    () => companies.find((item) => item.id === companyId) ?? null,
-    [companies, companyId]
-  );
-  const availableSites = useMemo(
-    () => sites.filter((item) => item.companyId === companyId),
-    [sites, companyId]
-  );
+  useEffect(() => {
+    if (!enableCompanySearch || !defaultCompanyId || searchedCompany) return;
+    let cancelled = false;
+    void fetch(`/api/admin/companies/search?id=${encodeURIComponent(defaultCompanyId)}`)
+      .then((res) => res.json())
+      .then((payload: { companies?: CompanySearchRow[] }) => {
+        if (cancelled) return;
+        const company = payload.companies?.[0];
+        if (company) {
+          setSearchedCompany(company);
+          setCompanyId(company.id);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [defaultCompanyId, enableCompanySearch, searchedCompany]);
+
+  useEffect(() => {
+    if (!enableCompanySearch) {
+      setSiteOptions(sites);
+      return;
+    }
+    if (!companyId) {
+      setSiteOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setSitesLoading(true);
+    void fetch(`/api/admin/companies/${encodeURIComponent(companyId)}/sites`)
+      .then((res) => res.json())
+      .then((payload: { sites?: SiteOption[] }) => {
+        if (!cancelled) setSiteOptions(payload.sites ?? []);
+      })
+      .finally(() => {
+        if (!cancelled) setSitesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [companyId, enableCompanySearch, sites]);
+
+  const selectedCompany = useMemo(() => {
+    if (enableCompanySearch) {
+      return searchedCompany;
+    }
+    return companies.find((item) => item.id === companyId) ?? null;
+  }, [companies, companyId, enableCompanySearch, searchedCompany]);
+
+  const availableSites = useMemo(() => {
+    if (enableCompanySearch) {
+      return siteOptions;
+    }
+    return sites.filter((item) => item.companyId === companyId);
+  }, [sites, companyId, enableCompanySearch, siteOptions]);
   const selectedSite = useMemo(
     () => availableSites.find((item) => item.id === siteId) ?? null,
     [availableSites, siteId]
@@ -206,9 +261,11 @@ export function CertificateUploadForm({
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label htmlFor="company_id" className={labelClass}>
-                    Customer <span className="text-oak-danger">*</span>
-                  </label>
+                  {!enableCompanySearch ? (
+                    <label htmlFor="company_id" className={labelClass}>
+                      Customer <span className="text-oak-danger">*</span>
+                    </label>
+                  ) : null}
                   {lockCompany && selectedCompany ? (
                     <>
                       <input type="hidden" name="company_id" value={selectedCompany.id} />
@@ -216,6 +273,16 @@ export function CertificateUploadForm({
                         {selectedCompany.companyName} ({selectedCompany.customerIdReadable})
                       </div>
                     </>
+                  ) : enableCompanySearch ? (
+                    <CustomerSearchSelect
+                      value={searchedCompany}
+                      onChange={(company) => {
+                        setSearchedCompany(company);
+                        setCompanyId(company?.id ?? "");
+                        setSiteId("");
+                      }}
+                      required
+                    />
                   ) : (
                     <select
                       id="company_id"
@@ -264,9 +331,11 @@ export function CertificateUploadForm({
                       value={siteId}
                       onChange={(event) => setSiteId(event.target.value)}
                       className={inputClass}
-                      disabled={!companyId}
+                      disabled={!companyId || sitesLoading}
                     >
-                      <option value="">Company-level certificate</option>
+                      <option value="">
+                        {sitesLoading ? "Loading sites…" : "Company-level certificate"}
+                      </option>
                       {availableSites.map((site) => (
                         <option key={site.id} value={site.id}>
                           {site.siteName}
