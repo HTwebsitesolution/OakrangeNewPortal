@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type AuthAuditAction =
   | "login"
   | "logout"
+  | "password_changed"
   | "account_disabled_block"
   | "access_pending_redirect";
 

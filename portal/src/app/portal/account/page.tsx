@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { one } from "@/lib/admin/embed";
 import { requirePortalSupabase } from "@/lib/auth/require-session";
 import { loadPortalAccessGrants } from "@/lib/certificates/portal-queries";
@@ -54,13 +54,17 @@ export default async function PortalAccountPage() {
         )}
       </section>
 
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        To change your password, use{" "}
-        <Link href="/login" className="underline">
-          sign out
-        </Link>{" "}
-        and the password reset option on the login page.
-      </p>
+      <section className="space-y-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Change password</h2>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Enter your current password, then choose a new one.
+        </p>
+        <ChangePasswordForm
+          email={profile.email}
+          profileId={profile.id}
+          userRole={profile.role}
+        />
+      </section>
     </div>
   );
 }
