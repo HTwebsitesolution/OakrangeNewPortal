@@ -84,7 +84,7 @@ export default async function AdminCertificateDetailPage({
           </p>
         </div>
         <div className="text-right text-sm text-zinc-500">
-          <p>Customer: {company.customer_id_readable}</p>
+          <p>Company: {company.customer_id_readable}</p>
           <p>{company.company_name}</p>
           <p>{site?.site_name ?? "Company-level certificate"}</p>
         </div>
@@ -98,7 +98,7 @@ export default async function AdminCertificateDetailPage({
             </h2>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2 text-sm">
               <div>
-                <dt className="text-xs uppercase text-zinc-500">Customer</dt>
+                <dt className="text-xs uppercase text-zinc-500">Company</dt>
                 <dd className="mt-1 text-zinc-900 dark:text-zinc-100">
                   <Link
                     href={`/admin/customers/${company.id}/certificates`}

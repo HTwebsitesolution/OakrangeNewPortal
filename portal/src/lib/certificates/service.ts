@@ -288,7 +288,7 @@ export async function loadCertificateUploadContext(
   }
 
   if (!company) {
-    return { context: null, error: "Customer not found." };
+    return { context: null, error: "Company not found." };
   }
 
   if (!siteId) {
@@ -318,7 +318,7 @@ export async function loadCertificateUploadContext(
   }
 
   if (!site) {
-    return { context: null, error: "Site not found for this customer." };
+    return { context: null, error: "Site not found for this company." };
   }
 
   return {

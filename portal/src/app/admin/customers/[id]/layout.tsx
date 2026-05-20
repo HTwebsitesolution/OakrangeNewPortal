@@ -48,7 +48,7 @@ export default async function CustomerDetailLayout({
         href="/admin/customers"
         className="text-sm font-medium text-oak-muted hover:text-oak-orange"
       >
-        ← Customers
+        ← Companies
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -62,7 +62,7 @@ export default async function CustomerDetailLayout({
           </p>
         </div>
         <Button href={`/admin/customers/${id}/edit`} variant="secondary">
-          Edit customer
+          Edit company
         </Button>
       </div>
       <CustomerDetailTabs companyId={id} />

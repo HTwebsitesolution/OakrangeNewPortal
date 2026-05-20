@@ -80,8 +80,8 @@ export default async function AdminDashboardPage() {
             <Button href="/admin/certificates/upload" variant="primary" className="min-h-11 sm:order-2">
               {brand.admin.uploadPrimary}
             </Button>
-            <Button href="/admin/customers/new" variant="secondary" className="min-h-11 sm:order-1">
-              Add customer
+            <Button href="/admin/users/new" variant="secondary" className="min-h-11 sm:order-1">
+              New company + user
             </Button>
             <Button href="/admin/audit-logs" variant="secondary" className="min-h-11 sm:order-3">
               Audit logs
@@ -96,7 +96,7 @@ export default async function AdminDashboardPage() {
             {expiringRows.length} certificate{expiringRows.length === 1 ? "" : "s"} due within 30 days
           </p>
           <p className="mt-1 text-sm">
-            Review expiring calibrations and notify customers before certificates lapse.
+            Review expiring calibrations and notify companies before certificates lapse.
           </p>
           <Link
             href="/admin/expiring-soon"
@@ -110,7 +110,7 @@ export default async function AdminDashboardPage() {
       <section aria-label="Key metrics">
         <h2 className="sr-only">Key metrics</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <MetricCard label="Customers" value={ac} href="/admin/customers" accent="orange" />
+          <MetricCard label="Companies" value={ac} href="/admin/customers" accent="orange" />
           <MetricCard label="Sites" value={as} href="/admin/sites" />
           <MetricCard label="Users" value={tu} href="/admin/users" />
           <MetricCard label="Certificates" value={tc} href="/admin/certificates" />
@@ -179,7 +179,7 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           <SectionCard title={brand.admin.customersTitle} href="/admin/customers">
             <ActivityList
-              empty="No customers yet."
+              empty="No companies yet."
               items={(recentCompanies.data ?? []).map((c) => ({
                 id: c.id,
                 href: `/admin/customers/${c.id}`,

@@ -48,7 +48,7 @@ export async function POST(
   const site = one(certificate.sites);
   if (!company) {
     return NextResponse.json(
-      { error: "Certificate customer context could not be loaded." },
+      { error: "Certificate company context could not be loaded." },
       { status: 400 }
     );
   }

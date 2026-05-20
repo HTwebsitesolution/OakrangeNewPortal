@@ -17,7 +17,7 @@ export function CustomerSearchSelect({
   onChange,
   disabled = false,
   required = false,
-  label = "Customer",
+  label = "Company",
 }: Props) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -191,7 +191,7 @@ export function CustomerSearchSelect({
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder="Customer number, company name, or contact name"
+          placeholder="Company ID, company name, or contact name"
           className={inputClass}
           role="combobox"
           aria-expanded={showDropdown}
@@ -214,7 +214,7 @@ export function CustomerSearchSelect({
             <li className="px-3 py-2 text-oak-muted">
               {query.trim().length < 2
                 ? "Type at least 2 characters"
-                : "No customers found"}
+                : "No companies found"}
             </li>
           ) : (
             results.map((company, index) => (
@@ -232,7 +232,7 @@ export function CustomerSearchSelect({
                   </span>
                   <span className="text-oak-charcoal">{company.companyName}</span>
                   {company.status === "inactive" ? (
-                    <span className="text-xs text-amber-700">Inactive customer</span>
+                    <span className="text-xs text-amber-700">Inactive company</span>
                   ) : null}
                 </button>
               </li>
@@ -248,8 +248,8 @@ export function CustomerSearchSelect({
       ) : null}
       {!value && !error ? (
         <p className="mt-1 text-xs text-oak-muted">
-          Search by customer number (e.g. VASE3233), company name, or contact name — not
-          portal user names.
+          Search by company ID (e.g. OAK-1001), company name, or contact name — not portal user
+          names.
         </p>
       ) : null}
     </div>

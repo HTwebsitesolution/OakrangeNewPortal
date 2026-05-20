@@ -125,7 +125,7 @@ export function UserCreateForm({
             </select>
             <p className="mt-1 text-xs text-zinc-500">
               Super Admins can create and manage other internal admins. Standard Admins manage
-              customers and portal users only.
+              companies and portal users only.
             </p>
           </div>
         ) : null}

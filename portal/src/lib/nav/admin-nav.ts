@@ -2,7 +2,7 @@ import type { SidebarNavItem } from "@/lib/nav/types";
 
 export const ADMIN_NAV_ITEMS: SidebarNavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", match: "exact" },
-  { href: "/admin/customers", label: "Customers" },
+  { href: "/admin/customers", label: "Companies" },
   { href: "/admin/sites", label: "Sites" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/certificates", label: "Certificates" },

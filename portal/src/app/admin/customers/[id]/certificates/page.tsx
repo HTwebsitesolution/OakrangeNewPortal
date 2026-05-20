@@ -56,7 +56,7 @@ export default async function CustomerCertificatesPlaceholder({
 
       {company.status === "inactive" ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          This customer is inactive. Existing records remain visible, but new uploads are blocked.
+          This company is inactive. Existing records remain visible, but new uploads are blocked.
         </p>
       ) : null}
 
@@ -75,7 +75,7 @@ export default async function CustomerCertificatesPlaceholder({
 
       <CertificateTable
         rows={rows}
-        emptyMessage="No certificates have been uploaded for this customer yet."
+        emptyMessage="No certificates have been uploaded for this company yet."
       />
     </div>
   );

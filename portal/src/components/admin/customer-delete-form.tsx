@@ -36,7 +36,7 @@ export function CustomerDeleteForm({
 
   return (
     <section className={`${cardClass} mt-10 border-red-200 p-6`}>
-      <h2 className="text-lg font-semibold text-oak-navy">Delete customer</h2>
+      <h2 className="text-lg font-semibold text-oak-navy">Delete company</h2>
       <p className="mt-1 text-sm text-oak-muted">
         Permanently remove <span className="font-medium text-oak-charcoal">{companyName}</span> (
         {customerIdReadable}). This cannot be undone.
@@ -60,7 +60,7 @@ export function CustomerDeleteForm({
           className="mt-4"
           onClick={() => setShowForm(true)}
         >
-          Delete customer…
+          Delete company…
         </Button>
       ) : (
         <form action={formAction} className="mt-4 max-w-md space-y-4">
@@ -82,7 +82,7 @@ export function CustomerDeleteForm({
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" variant="danger" disabled={pending}>
-              {pending ? "Deleting…" : "Permanently delete customer"}
+              {pending ? "Deleting…" : "Permanently delete company"}
             </Button>
             <Button
               type="button"

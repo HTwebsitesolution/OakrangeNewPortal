@@ -41,16 +41,16 @@ export default async function AdminAllSitesPage({ searchParams }: Props) {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Manage individual sites from each{" "}
           <Link href="/admin/customers" className="underline">
-            customer
+            company
           </Link>
-          . Use this list to search across customers.
+          . Use this list to search across companies.
         </p>
       </div>
       <form method="get" className="flex max-w-md gap-2">
         <input
           name="q"
           defaultValue={rawQ}
-          placeholder="Filter by site or customer…"
+          placeholder="Filter by site or company…"
           className="min-w-0 flex-1 rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
         />
         <button type="submit" className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600">
@@ -62,7 +62,7 @@ export default async function AdminAllSitesPage({ searchParams }: Props) {
           <thead className="bg-zinc-100 text-xs font-medium uppercase text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
             <tr>
               <th className="px-3 py-2">Site</th>
-              <th className="px-3 py-2">Customer</th>
+              <th className="px-3 py-2">Company</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2" />
             </tr>

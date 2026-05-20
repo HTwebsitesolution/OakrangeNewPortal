@@ -116,15 +116,15 @@ export function validateCertificateUploadInput(
   input: CertificateUploadInput
 ): string | null {
   if (!CERTIFICATE_UUID_RE.test(input.companyId)) {
-    return "Customer is required.";
+    return "Company is required.";
   }
 
   if (input.companyId !== context.companyId) {
-    return "Customer selection does not match the requested upload context.";
+    return "Company selection does not match the requested upload context.";
   }
 
   if (context.companyStatus !== "active") {
-    return "Cannot publish a new certificate for an inactive customer.";
+    return "Cannot publish a new certificate for an inactive company.";
   }
 
   if (input.siteId && !CERTIFICATE_UUID_RE.test(input.siteId)) {
@@ -136,7 +136,7 @@ export function validateCertificateUploadInput(
   }
 
   if (input.siteId && !context.siteId) {
-    return "Selected site could not be validated for this customer.";
+    return "Selected site could not be validated for this company.";
   }
 
   if (context.siteId && context.siteStatus !== "active") {

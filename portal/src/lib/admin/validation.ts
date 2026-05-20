@@ -78,6 +78,29 @@ export function validateSiteForm(data: { site_name: string; status: SiteStatus }
   return null;
 }
 
+const PORTAL_USER_ROLES: UserRole[] = ["site_manager", "customer_user"];
+
+export function validateCompanyAndPortalUserCreateForm(data: {
+  company_name: string;
+  primary_contact_name: string;
+  email: string;
+  username: string;
+  role: UserRole;
+  temp_password: string;
+}): string | null {
+  if (!data.company_name?.trim()) return "Business name is required.";
+  if (!data.primary_contact_name?.trim()) return "Contact name is required.";
+  if (!data.email?.trim()) return "Email is required.";
+  if (!EMAIL_RE.test(data.email)) return "Enter a valid email address.";
+  if (!PORTAL_USER_ROLES.includes(data.role)) {
+    return "Choose site manager or customer user for this setup.";
+  }
+  if (data.temp_password.length < 8) {
+    return "Temporary password must be at least 8 characters.";
+  }
+  return validateUsername(data.username);
+}
+
 export function validateUserCreateForm(data: {
   email: string;
   username: string;

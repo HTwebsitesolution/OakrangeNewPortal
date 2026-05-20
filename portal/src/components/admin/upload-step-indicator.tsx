@@ -1,6 +1,6 @@
 import { cn } from "@/lib/ui/cn";
 
-const STEPS = ["Customer & site", "Certificate details", "Review & publish"] as const;
+const STEPS = ["Company & site", "Certificate details", "Review & publish"] as const;
 
 export function UploadStepIndicator({ activeStep }: { activeStep: 1 | 2 | 3 }) {
   return (

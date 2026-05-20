@@ -74,10 +74,10 @@ export default async function CustomerUsersTabPage({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Users</h2>
         <Link
-          href={`/admin/users/new?companyId=${companyId}`}
+          href={`/admin/users/new?mode=existing&companyId=${companyId}`}
           className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600"
         >
-          Invite / create user
+          Add portal user
         </Link>
       </div>
       <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">

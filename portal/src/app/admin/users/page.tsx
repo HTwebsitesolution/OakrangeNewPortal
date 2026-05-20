@@ -41,12 +41,20 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             role required).
           </p>
         </div>
-        <Link
-          href="/admin/users/new"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          New user
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/users/new"
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            New company + user
+          </Link>
+          <Link
+            href="/admin/users/new?mode=existing"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600"
+          >
+            Add user only
+          </Link>
+        </div>
       </div>
       <form method="get" className="flex max-w-md gap-2">
         <input

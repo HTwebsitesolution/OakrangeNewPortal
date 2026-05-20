@@ -9,11 +9,11 @@ export default function NewCustomerPage() {
         href="/admin/customers"
         className="text-sm font-medium text-oak-muted hover:text-oak-orange"
       >
-        ← Customers
+        ← Companies
       </Link>
       <PageHeader
-        title="New customer"
-        description="Customer ID is generated automatically when you save."
+        title="New company"
+        description="Company ID is generated automatically when you save."
       />
       <CustomerForm mode="create" />
     </div>

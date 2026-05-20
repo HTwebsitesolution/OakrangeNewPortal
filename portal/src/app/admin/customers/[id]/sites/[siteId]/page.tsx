@@ -132,7 +132,7 @@ export default async function SiteDetailPage({
       <section>
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Users with access</h3>
         <p className="mt-1 text-xs text-zinc-500">
-          Includes explicit site grants and company-wide grants for this customer (company-wide can
+          Includes explicit site grants and company-wide grants for this company (company-wide can
           see all sites per RLS).
         </p>
         <ul className="mt-2 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">

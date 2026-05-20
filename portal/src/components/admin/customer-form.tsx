@@ -67,7 +67,7 @@ export function CustomerForm({
       <FormFlash state={state} />
       {customerIdReadable ? (
         <div>
-          <label className={labelClass}>Customer ID</label>
+          <label className={labelClass}>Company ID</label>
           <p className="text-sm text-oak-charcoal">{customerIdReadable}</p>
         </div>
       ) : null}
@@ -196,7 +196,7 @@ export function CustomerForm({
       </div>
       <div className="flex gap-3">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : mode === "create" ? "Create customer" : "Save changes"}
+          {pending ? "Saving…" : mode === "create" ? "Create company" : "Save changes"}
         </Button>
         {companyId ? (
           <Button href={`/admin/customers/${companyId}`} variant="secondary">

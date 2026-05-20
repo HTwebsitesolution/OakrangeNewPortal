@@ -91,7 +91,7 @@ export async function updateCustomerAction(
     .eq("id", companyId)
     .maybeSingle();
   if (beforeErr || !before) {
-    return { error: "Customer not found." };
+    return { error: "Company not found." };
   }
 
   const row = {
@@ -175,7 +175,7 @@ export async function deleteCustomerAction(
     .maybeSingle();
 
   if (companyErr || !company) {
-    return { error: "Customer not found." };
+    return { error: "Company not found." };
   }
 
   if (confirmName.toLowerCase() !== company.company_name.trim().toLowerCase()) {

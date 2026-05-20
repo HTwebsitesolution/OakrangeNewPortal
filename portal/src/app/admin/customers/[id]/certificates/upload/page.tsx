@@ -39,7 +39,7 @@ export default async function CustomerCertificateUploadPage({
           Upload certificate for {company.company_name}
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Customer-scoped upload with optional site targeting.
+          Company-scoped upload with optional site targeting.
         </p>
       </div>
 

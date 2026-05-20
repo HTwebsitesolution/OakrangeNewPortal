@@ -51,7 +51,7 @@ export function CertificateListFiltersForm({
         {showCustomerSearch ? (
           <div>
             <label htmlFor="customerSearch" className="block text-xs font-medium text-zinc-600">
-              Customer name / ID
+              Company name / ID
             </label>
             <input
               id="customerSearch"

@@ -65,7 +65,7 @@ export default async function CustomerSitesPage({
         ))}
       </ul>
       {(sites ?? []).length === 0 ? (
-        <p className="text-sm text-zinc-500">No sites yet. Create the first site for this customer.</p>
+        <p className="text-sm text-zinc-500">No sites yet. Create the first site for this company.</p>
       ) : null}
     </div>
   );

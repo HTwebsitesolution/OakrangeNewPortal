@@ -40,7 +40,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
   if (error) {
     return (
       <div>
-        <PageHeader title="Customers" />
+        <PageHeader title="Companies" />
         <p className="mt-2 text-sm text-oak-danger">{error.message}</p>
       </div>
     );
@@ -68,9 +68,16 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Customers"
-        description="Search by customer ID, company name, contact, email, or postcode."
-        actions={<Button href="/admin/customers/new">New customer</Button>}
+        title="Companies"
+        description="Search by company ID, company name, contact, email, or postcode."
+        actions={
+          <>
+            <Button href="/admin/users/new">New company + user</Button>
+            <Button href="/admin/customers/new" variant="secondary">
+              Company only
+            </Button>
+          </>
+        }
       />
 
       <form method="get" className="flex max-w-md gap-2">
@@ -89,7 +96,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
         <table className={tableClass}>
           <thead className={tableHeadClass}>
             <tr>
-              <th className={tableThClass}>Customer ID</th>
+              <th className={tableThClass}>Company ID</th>
               <th className={tableThClass}>Company</th>
               <th className={tableThClass}>Contact</th>
               <th className={tableThClass}>Postcode</th>
@@ -136,7 +143,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
           </tbody>
         </table>
         {filteredCompanies.length === 0 ? (
-          <p className="p-4 text-sm text-oak-muted">No customers match your search.</p>
+          <p className="p-4 text-sm text-oak-muted">No companies match your search.</p>
         ) : null}
       </div>
     </div>

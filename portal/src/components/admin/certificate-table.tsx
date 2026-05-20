@@ -41,7 +41,7 @@ export function CertificateTable({
         <thead className="bg-zinc-50 dark:bg-zinc-900">
           <tr>
             <th className="px-3 py-3 text-left font-medium text-zinc-600">Document</th>
-            <th className="px-3 py-3 text-left font-medium text-zinc-600">Customer / site</th>
+            <th className="px-3 py-3 text-left font-medium text-zinc-600">Company / site</th>
             <th className="px-3 py-3 text-left font-medium text-zinc-600">Status</th>
             <th className="px-3 py-3 text-left font-medium text-zinc-600">Dates</th>
             <th className="px-3 py-3 text-left font-medium text-zinc-600">Uploaded by</th>

@@ -19,7 +19,7 @@ export default async function EditCustomerPage({
 
   return (
     <div className="mt-6 space-y-6">
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Edit customer</h2>
+      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Edit company</h2>
       <CustomerForm
         mode="edit"
         companyId={c.id}

@@ -195,7 +195,7 @@ export function CertificateUploadForm({
 
   const blockedReason =
     selectedCompany?.status === "inactive"
-      ? "Uploads are blocked for inactive customers."
+      ? "Uploads are blocked for inactive companies."
       : selectedSite?.status === "inactive"
         ? "Uploads are blocked for inactive sites."
         : null;
@@ -257,13 +257,13 @@ export function CertificateUploadForm({
             <div className={`${cardClass} p-5`}>
               <h2 className={sectionTitleClass}>Certificate details</h2>
               <p className="mt-1 text-xs text-oak-muted">
-                Choose the customer, site scope, and calibration dates before uploading the PDF.
+                Choose the company, site scope, and calibration dates before uploading the PDF.
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   {!enableCompanySearch ? (
                     <label htmlFor="company_id" className={labelClass}>
-                      Customer <span className="text-oak-danger">*</span>
+                      Company <span className="text-oak-danger">*</span>
                     </label>
                   ) : null}
                   {lockCompany && selectedCompany ? (
@@ -295,7 +295,7 @@ export function CertificateUploadForm({
                       }}
                       className={inputClass}
                     >
-                      <option value="">Select a customer</option>
+                      <option value="">Select a company</option>
                       {companies.map((company) => (
                         <option key={company.id} value={company.id}>
                           {company.customerIdReadable} - {company.companyName}
@@ -500,18 +500,18 @@ export function CertificateUploadForm({
                   {selectedSite?.siteName ?? "Company-level (authorised company users)"}
                 </p>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wide text-oak-muted">
-                  Customers will see
+                  Portal users will see
                 </p>
                 <p className="mt-1 font-medium text-oak-charcoal">{generatedPreview.displayTitle}</p>
               </div>
             ) : null}
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Customer</dt>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-oak-muted">Company</dt>
                 <dd className="text-oak-charcoal">
                   {selectedCompany
                     ? `${selectedCompany.customerIdReadable} - ${selectedCompany.companyName}`
-                    : "Select a customer"}
+                    : "Select a company"}
                 </dd>
               </div>
               <div>

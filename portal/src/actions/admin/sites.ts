@@ -87,7 +87,7 @@ export async function updateSiteAction(
     .eq("id", siteId)
     .eq("company_id", companyId)
     .maybeSingle();
-  if (beforeErr || !before) return { error: "Site not found for this customer." };
+  if (beforeErr || !before) return { error: "Site not found for this company." };
 
   const row = {
     site_name,

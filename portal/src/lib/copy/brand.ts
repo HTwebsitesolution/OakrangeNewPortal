@@ -41,18 +41,18 @@ export const brand = {
     dashboardEyebrow: "Operations centre",
     dashboardTitle: "Admin dashboard",
     dashboardLead:
-      "Monitor customers, certificates, and portal activity. Publish documents when calibrations are complete.",
+      "Monitor companies, certificates, and portal activity. Publish documents when calibrations are complete.",
     uploadPrimary: "Upload certificate",
     attentionTitle: "Certificates needing attention",
     attentionEmpty: "No certificates due in the next 30 days — you're up to date.",
     recentUploadsTitle: "Recent uploads",
-    customersTitle: "Recently added customers",
+    customersTitle: "Recently added companies",
     usersTitle: "Recently added users",
     uploadPageTitle: "Upload certificate",
     uploadPageLead:
-      "Publish a calibration PDF to the secure portal. Customers only see documents after you publish.",
+      "Publish a calibration PDF to the secure portal. Portal users only see documents after you publish.",
     uploadHelper:
-      "Files are stored privately. Customers access certificates through time-limited signed links only.",
+      "Files are stored privately. Portal users access certificates through time-limited signed links only.",
   },
 
   portal: {
