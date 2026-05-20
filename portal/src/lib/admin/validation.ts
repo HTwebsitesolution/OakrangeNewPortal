@@ -13,6 +13,27 @@ export const USER_ROLES: UserRole[] = [
 ];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Letters and numbers only; case preserved (e.g. 1824newport, 378STC). */
+const USERNAME_RE = /^[A-Za-z0-9]{4,32}$/;
+
+export function normalizeUsername(v: string): string {
+  return v.trim();
+}
+
+export function parseUsername(v: string | null | undefined): string | null {
+  const normalized = normalizeUsername(v ?? "");
+  if (!normalized) return null;
+  return USERNAME_RE.test(normalized) ? normalized : null;
+}
+
+export function validateUsername(v: string): string | null {
+  const normalized = normalizeUsername(v);
+  if (!normalized) return "Username is required.";
+  if (!USERNAME_RE.test(normalized)) {
+    return "Username must be 4–32 letters or numbers only (e.g. 1824newport, 378STC).";
+  }
+  return null;
+}
 
 export function parseCompanyStatus(v: string | null | undefined): CompanyStatus {
   return v === "inactive" ? "inactive" : "active";
@@ -55,6 +76,18 @@ export function validateSiteForm(data: { site_name: string; status: SiteStatus }
   if (!data.site_name?.trim()) return "Site name is required.";
   if (!SITE_STATUSES.includes(data.status)) return "Invalid status.";
   return null;
+}
+
+export function validateUserCreateForm(data: {
+  email: string;
+  username: string;
+  role: UserRole;
+  company_id: string | null;
+  full_name: string;
+}): string | null {
+  const userErr = validateUserForm(data);
+  if (userErr) return userErr;
+  return validateUsername(data.username);
 }
 
 export function validateUserForm(data: {

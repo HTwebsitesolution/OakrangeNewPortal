@@ -53,8 +53,30 @@ export function UserCreateForm({
           />
         </div>
         <div>
+          <label htmlFor="username" className="block text-xs font-medium text-zinc-600">
+            Username <span className="text-red-600">*</span>
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            required
+            minLength={4}
+            maxLength={32}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="e.g. 1824newport or 378STC"
+            pattern="[A-Za-z0-9]{4,32}"
+            title="4–32 letters or numbers only"
+            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900"
+          />
+          <p className="mt-1 text-xs text-zinc-500">
+            Letters and numbers only (mixed case is fine). Cannot be changed after the account is created.
+          </p>
+        </div>
+        <div>
           <label htmlFor="full_name" className="block text-xs font-medium text-zinc-600">
-            Full name
+            Business name
           </label>
           <input
             id="full_name"

@@ -69,6 +69,7 @@ export default async function AdminUserEditPage({
       <UserEditForm
         profileId={p.id}
         defaultEmail={p.email}
+        defaultUsername={p.username ?? null}
         defaultFullName={p.full_name}
         defaultRole={p.role as UserRole}
         defaultAdminLevel={(p.admin_level as AdminLevel | null) ?? null}

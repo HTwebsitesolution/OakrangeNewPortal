@@ -13,8 +13,11 @@ import {
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import {
+  normalizeUsername,
   parseAdminLevel,
   parseUserRole,
+  parseUsername,
+  validateUserCreateForm,
   validateUserForm,
 } from "@/lib/admin/validation";
 import type { AdminLevel } from "@/types/profile";
@@ -103,14 +106,23 @@ export async function createPortalUserAction(
   }
 
   const email = text(formData, "email").toLowerCase();
+  const usernameRaw = text(formData, "username");
+  const username = parseUsername(usernameRaw);
   const full_name = text(formData, "full_name");
   const role = parseUserRole(text(formData, "role"));
   const company_id = optionalCompanyId(formData);
   const tempPassword = text(formData, "temp_password");
 
   if (!role) return { error: "Role is required." };
-  const verr = validateUserForm({ email, role, company_id, full_name });
+  const verr = validateUserCreateForm({
+    email,
+    username: usernameRaw,
+    role,
+    company_id,
+    full_name,
+  });
   if (verr) return { error: verr };
+  if (!username) return { error: "Enter a valid username (4–32 letters or numbers)." };
   if (tempPassword.length < 8) {
     return { error: "Temporary password must be at least 8 characters." };
   }
@@ -122,6 +134,16 @@ export async function createPortalUserAction(
   const admin_level = resolveAdminLevelForRole(role, text(formData, "admin_level"), null);
   if (role === "oakrange_admin" && admin_level && !canAssignAdminLevel(actor, admin_level)) {
     return { error: "Only a Super Admin can assign the Super Admin level." };
+  }
+
+  const { data: existingUsername } = await service
+    .from("profiles")
+    .select("id")
+    .ilike("username", username)
+    .maybeSingle();
+
+  if (existingUsername) {
+    return { error: `Username ${username} is already in use.` };
   }
 
   const { data: created, error: createErr } = await service.auth.admin.createUser({
@@ -153,6 +175,7 @@ export async function createPortalUserAction(
     .from("profiles")
     .update({
       email,
+      username,
       full_name: full_name || email,
       role,
       admin_level,
@@ -162,10 +185,15 @@ export async function createPortalUserAction(
     .eq("id", profileRow.id);
 
   if (upErr) {
+    const msg = upErr.message.includes("profiles_username_unique")
+      ? `Username ${username} is already in use.`
+      : upErr.message.includes("username_immutable")
+        ? "Username cannot be changed after it is set."
+        : upErr.message;
     return rollbackCreatedAuthUser(
       service,
       user.id,
-      `Profile update failed after Auth user creation: ${upErr.message}`
+      `Profile update failed after Auth user creation: ${msg}`
     );
   }
 
@@ -182,6 +210,7 @@ export async function createPortalUserAction(
     companyId: finalCompanyId,
     metadata: {
       email,
+      username,
       role,
       full_name: full_name || email,
       ...(admin_level ? { admin_level } : {}),
@@ -229,13 +258,24 @@ export async function updatePortalUserAction(
   const verr = validateUserForm({ email, role, company_id, full_name });
   if (verr) return { error: verr };
 
+  const submittedUsername = normalizeUsername(text(formData, "username"));
+
   const { data: existing, error: exErr } = await supabase
     .from("profiles")
-    .select("id, auth_user_id, is_active, role, admin_level, company_id, email")
+    .select("id, auth_user_id, is_active, role, admin_level, company_id, email, username")
     .eq("id", profileId)
     .maybeSingle();
 
   if (exErr || !existing) return { error: "User not found." };
+
+  if (submittedUsername) {
+    if (!existing.username) {
+      return { error: "Username can only be set when the account is created." };
+    }
+    if (submittedUsername !== existing.username) {
+      return { error: "Username cannot be changed after it is set." };
+    }
+  }
 
   const targetIsInternal = existing.role === "oakrange_admin";
   const promotingToInternal = role === "oakrange_admin";

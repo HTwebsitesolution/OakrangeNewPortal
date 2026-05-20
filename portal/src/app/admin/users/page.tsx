@@ -11,7 +11,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   const { data: rows, error } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, is_active, company_id, companies(company_name)")
+    .select("id, email, username, full_name, role, is_active, company_id, companies(company_name)")
     .order("email")
     .limit(500);
 
@@ -27,7 +27,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const filtered = (rows ?? []).filter((r) => {
     if (!q) return true;
     const co = one(r.companies) as { company_name: string } | null;
-    const blob = `${r.email} ${r.full_name} ${r.role} ${co?.company_name ?? ""}`.toLowerCase();
+    const blob = `${r.username ?? ""} ${r.email} ${r.full_name} ${r.role} ${co?.company_name ?? ""}`.toLowerCase();
     return blob.includes(q);
   });
 
@@ -37,7 +37,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         <div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Users</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Search by name, email, role, or company. Creating a user provisions Supabase Auth (service
+            Search by username, business name, email, role, or company. Creating a user provisions Supabase Auth (service
             role required).
           </p>
         </div>
@@ -63,8 +63,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-zinc-100 text-xs font-medium uppercase text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
             <tr>
+              <th className="px-3 py-2">Username</th>
               <th className="px-3 py-2">Email</th>
-              <th className="px-3 py-2">Name</th>
+              <th className="px-3 py-2">Business name</th>
               <th className="px-3 py-2">Role</th>
               <th className="px-3 py-2">Company</th>
               <th className="px-3 py-2">Active</th>
@@ -75,6 +76,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               const co = one(r.companies) as { company_name: string } | null;
               return (
                 <tr key={r.id} className="bg-white dark:bg-zinc-950">
+                  <td className="px-3 py-2 font-mono text-xs text-zinc-700 dark:text-zinc-300">
+                    {r.username ?? "—"}
+                  </td>
                   <td className="px-3 py-2">
                     <Link href={`/admin/users/${r.id}`} className="font-medium text-zinc-900 underline dark:text-zinc-50">
                       {r.email}

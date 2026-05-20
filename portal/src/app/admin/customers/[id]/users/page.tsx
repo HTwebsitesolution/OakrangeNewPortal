@@ -20,18 +20,26 @@ export default async function CustomerUsersTabPage({
 
   const { data: direct } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, is_active")
+    .select("id, email, username, full_name, role, is_active")
     .eq("company_id", companyId)
     .order("email");
 
   const { data: accessRows } = await supabase
     .from("user_site_access")
-    .select("user_id, profiles(id, email, full_name, role, is_active)")
+    .select("user_id, profiles(id, email, username, full_name, role, is_active)")
     .eq("company_id", companyId);
 
   const merged = new Map<
     string,
-    { id: string; email: string; full_name: string; role: string; is_active: boolean; note: string }
+    {
+      id: string;
+      email: string;
+      username: string | null;
+      full_name: string;
+      role: string;
+      is_active: boolean;
+      note: string;
+    }
   >();
 
   for (const p of direct ?? []) {
@@ -45,6 +53,7 @@ export default async function CustomerUsersTabPage({
     const p = one(row.profiles) as {
       id: string;
       email: string;
+      username: string | null;
       full_name: string;
       role: string;
       is_active: boolean;
@@ -79,6 +88,8 @@ export default async function CustomerUsersTabPage({
                 {u.email}
               </Link>
               <p className="text-xs text-zinc-500">
+                {u.username ? <span className="font-mono">{u.username}</span> : null}
+                {u.username ? " · " : ""}
                 {u.full_name} · {u.role}
                 {!u.is_active ? " · inactive" : ""} · {u.note}
               </p>

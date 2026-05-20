@@ -40,12 +40,17 @@ export default async function AdminUserDetailPage({
         <div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">{p.email}</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {p.full_name} · {p.role}
+            {p.username ? (
+              <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{p.username}</span>
+            ) : null}
+            {p.username ? " · " : ""}
+            {p.role}
             {p.role === "oakrange_admin" && p.admin_level
               ? ` · ${p.admin_level === "super_admin" ? "Super Admin" : "Admin"}`
               : ""}
             {!p.is_active ? " · inactive" : ""}
           </p>
+          <p className="mt-1 text-sm text-zinc-500">Business name: {p.full_name || "—"}</p>
           <p className="mt-1 text-sm text-zinc-500">Company on profile: {co?.company_name ?? "—"}</p>
         </div>
         {p.role !== "oakrange_admin" || canEditInternalAdmin(actor) ? (

@@ -12,6 +12,7 @@ type CompanyOption = { id: string; company_name: string };
 export function UserEditForm({
   profileId,
   defaultEmail,
+  defaultUsername,
   defaultFullName,
   defaultRole,
   defaultAdminLevel,
@@ -24,6 +25,7 @@ export function UserEditForm({
 }: {
   profileId: string;
   defaultEmail: string;
+  defaultUsername: string | null;
   defaultFullName: string;
   defaultRole: UserRole;
   defaultAdminLevel: AdminLevel | null;
@@ -62,8 +64,27 @@ export function UserEditForm({
         </p>
       </div>
       <div>
+        <label htmlFor="username_display" className="block text-xs font-medium text-zinc-600">
+          Username
+        </label>
+        {defaultUsername ? (
+          <>
+            <input type="hidden" name="username" value={defaultUsername} />
+            <div
+              id="username_display"
+              className="mt-1 rounded border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-sm text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            >
+              {defaultUsername}
+            </div>
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-zinc-500">Not set (legacy account).</p>
+        )}
+        <p className="mt-1 text-xs text-zinc-500">Usernames cannot be changed after creation.</p>
+      </div>
+      <div>
         <label htmlFor="full_name" className="block text-xs font-medium text-zinc-600">
-          Full name
+          Business name
         </label>
         <input
           id="full_name"
