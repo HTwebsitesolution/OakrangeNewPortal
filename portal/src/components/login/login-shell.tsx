@@ -13,6 +13,7 @@ import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 import type { SessionProfile } from "@/types/profile";
 import { brand } from "@/lib/copy/brand";
 import { LoginSupportInfo } from "@/components/login/login-page-chrome";
+import { PortalMigrationNotice } from "@/components/login/portal-migration-notice";
 
 const login = brand.auth.login;
 
@@ -129,7 +130,9 @@ export function LoginShell({
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <PortalMigrationNotice />
+      <div className="space-y-6">
       <header className="login-animate-fade-up login-animate-delay-1 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-oak-orange">
           {login.portalEyebrow}
@@ -243,5 +246,6 @@ export function LoginShell({
 
       <LoginSupportInfo />
     </div>
+    </>
   );
 }
