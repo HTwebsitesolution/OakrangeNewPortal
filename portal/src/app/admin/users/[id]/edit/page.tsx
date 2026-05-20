@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminSupabase } from "@/lib/auth/require-session";
 import { canEditInternalAdmin, isSuperAdmin } from "@/lib/auth/admin-permissions";
+import { mapCompanySearchRow } from "@/lib/admin/company-search";
 import { creatableRolesForActor } from "@/lib/admin/validation";
 import { UserEditForm } from "@/components/admin/user-edit-form";
 import { AccessGrantsPanel, type AccessRow } from "@/components/admin/access-grants-panel";
@@ -39,14 +40,23 @@ export default async function AdminUserEditPage({
     );
   }
 
-  const [{ data: companies }, { data: sites }, { data: accessRows }] = await Promise.all([
-    supabase.from("companies").select("id, company_name").order("company_name"),
-    supabase.from("sites").select("id, company_id, site_name").order("site_name").limit(500),
-    supabase
-      .from("user_site_access")
-      .select("id, access_type, company_id, site_id, companies(company_name), sites(site_name)")
-      .eq("user_id", id),
-  ]);
+  const companySelect =
+    "id, customer_id_readable, company_name, status" as const;
+
+  const [{ data: companies }, { data: sites }, { data: accessRows }, { data: profileCompany }] =
+    await Promise.all([
+      supabase.from("companies").select("id, company_name").order("company_name"),
+      supabase.from("sites").select("id, company_id, site_name").order("site_name").limit(500),
+      supabase
+        .from("user_site_access")
+        .select("id, access_type, company_id, site_id, companies(company_name), sites(site_name)")
+        .eq("user_id", id),
+      p.company_id
+        ? supabase.from("companies").select(companySelect).eq("id", p.company_id).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+
+  const initialCompany = profileCompany ? mapCompanySearchRow(profileCompany) : null;
 
   const accessTyped: AccessRow[] = (accessRows ?? []).map((r) => ({
     id: r.id,
@@ -73,9 +83,8 @@ export default async function AdminUserEditPage({
         defaultFullName={p.full_name}
         defaultRole={p.role as UserRole}
         defaultAdminLevel={(p.admin_level as AdminLevel | null) ?? null}
-        defaultCompanyId={p.company_id}
+        initialCompany={initialCompany}
         defaultIsActive={p.is_active}
-        companies={companies ?? []}
         creatableRoles={creatableRolesForActor(actor)}
         actorIsSuperAdmin={isSuperAdmin(actor)}
         targetIsInternalAdmin={targetIsInternalAdmin}
