@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const OLD_PORTAL_URL = "https://oakrangeonline.co.uk";
+const LEGACY_PORTAL_URL = "https://portal.oakrange.co.uk/";
 const DISMISS_KEY = "oakrange_portal_migration_notice_dismissed";
 
 function shouldShowNotice(): boolean {
@@ -18,7 +18,7 @@ function shouldShowNotice(): boolean {
   return isPortalDomain || envEnabled;
 }
 
-/** Temporary notice while existing customers still use oakrangeonline.co.uk. */
+/** Temporary notice while existing customers still use portal.oakrange.co.uk. */
 export function PortalMigrationNotice() {
   const [show, setShow] = useState(false);
 
@@ -68,7 +68,7 @@ export function PortalMigrationNotice() {
         </p>
 
         <a
-          href={OLD_PORTAL_URL}
+          href={LEGACY_PORTAL_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-6 flex w-full items-center justify-center rounded-xl bg-oak-orange px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-oak-orange focus:ring-offset-2"
@@ -77,7 +77,7 @@ export function PortalMigrationNotice() {
         </a>
 
         <p className="mt-3 text-center text-sm font-medium text-oak-charcoal">
-          www.oakrangeonline.co.uk
+          portal.oakrange.co.uk
         </p>
 
         <div className="mt-6 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-oak-muted">
