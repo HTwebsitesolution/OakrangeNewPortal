@@ -69,5 +69,6 @@ export const brand = {
     mobileViewPdf: "View PDF",
     mobileDownload: "Download",
     sitesTitle: "Your sites",
+    supportEmails: ["info@oakrange.co.uk", "sales@oakrange.co.uk"],
   },
 } as const;
