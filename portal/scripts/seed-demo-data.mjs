@@ -201,11 +201,11 @@ const COMPANIES = [
 ];
 
 const USERS = [
-  { email: "meridian@example.com", username: "meridianfleet", company: "Meridian Logistics Group", role: "customer_user", access: "company" },
+  { email: "meridian@example.com", username: "1018MLG", company: "Meridian Logistics Group", role: "customer_user", access: "company" },
   { email: "meridian.manager@example.com", username: "meridianmanager", company: "Meridian Logistics Group", role: "site_manager", access: ["bristol", "manchester"] },
-  { email: "meridian.southampton@example.com", username: "meridiansoton", company: "Meridian Logistics Group", role: "customer_user", access: ["southampton"] },
-  { email: "harbourview@example.com", username: "harbourview", company: "Harbourview Construction Ltd", role: "customer_user", access: "company" },
-  { email: "oakfield@example.com", username: "oakfieldestates", company: "Oakfield Healthcare Services", role: "customer_user", access: "company" },
+  { email: "meridian.southampton@example.com", username: "Soton1018", company: "Meridian Logistics Group", role: "customer_user", access: ["southampton"] },
+  { email: "harbourview@example.com", username: "Cardiff1019", company: "Harbourview Construction Ltd", role: "customer_user", access: "company" },
+  { email: "oakfield@example.com", username: "Leeds1020", company: "Oakfield Healthcare Services", role: "customer_user", access: "company" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -440,8 +440,33 @@ async function ensureSite(companyId, spec) {
   return data.id;
 }
 
+/**
+ * Usernames are immutable, so a demo user whose username differs from the spec is recreated —
+ * unless it has audit history (audit_logs references the profile and must be preserved).
+ */
+async function recreateIfUsernameChanged(user, spec) {
+  const profile = await waitForProfile(user.id);
+  if (!profile.username || profile.username === spec.username) return user;
+  const { count, error } = await admin
+    .from("audit_logs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", profile.id);
+  if (error) throw error;
+  if (count > 0) {
+    console.warn(
+      `  Keeping username "${profile.username}" for ${spec.email}: it has audit history, so it cannot be recreated as "${spec.username}".`
+    );
+    return user;
+  }
+  const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
+  if (delErr) throw delErr;
+  console.log(`  Recreating ${spec.email} to change username "${profile.username}" -> "${spec.username}"`);
+  return null;
+}
+
 async function ensureUser(spec, companyId, siteIds, uploaderProfileId) {
   let user = await findAuthUserByEmail(spec.email);
+  if (user) user = await recreateIfUsernameChanged(user, spec);
   if (user) {
     const { error } = await admin.auth.admin.updateUserById(user.id, { password: PASSWORD });
     if (error) throw error;
@@ -618,7 +643,7 @@ async function main() {
 
   for (const spec of USERS) {
     await ensureUser(spec, companyIds[spec.company], siteIdsByCompany[spec.company], uploader.id);
-    console.log(`User: ${spec.email} (${spec.role})`);
+    console.log(`User: ${spec.username} / ${spec.email} (${spec.role})`);
   }
 
   console.log(`\nDemo data ready: ${COMPANIES.length} companies, ${certCount} certificates, ${USERS.length} portal users.`);
