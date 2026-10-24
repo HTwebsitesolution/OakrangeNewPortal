@@ -67,7 +67,7 @@ async function liveSignIn(page, email) {
     throw new Error(`Expected /login after clearCookies, got ${page.url()}`);
   }
 
-  await page.locator("#email").fill(email);
+  await page.locator("#identifier").fill(email);
   await page.locator("#password").fill(PASSWORD);
   await page.getByRole("button", { name: /^Sign in$/i }).click();
 

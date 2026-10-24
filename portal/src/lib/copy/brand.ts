@@ -20,7 +20,7 @@ export const brand = {
       welcomeTitle: "Welcome",
       welcomeLead:
         "This portal gives you access to calibration certificates, electrical reports, and liability and TUV certificates issued by Oakrange Engineering.",
-      emailHint: "Use the email address or login details supplied by Oakrange.",
+      emailHint: "Use the username or email address supplied by Oakrange.",
       noCredentials:
         "If you have not yet received your username and password, please contact us.",
       feedbackLead:

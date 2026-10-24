@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { labelClass } from "@/lib/ui/classes";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { signInWithUsernameAction } from "@/actions/auth/sign-in";
 import { logAuthAudit } from "@/lib/audit/log";
 import { dashboardPathForRole } from "@/lib/auth/paths";
 import { safeRedirectPath } from "@/lib/auth/safe-redirect";
@@ -38,7 +39,7 @@ export function LoginShell({
   redirectParam,
 }: LoginShellProps) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -53,13 +54,23 @@ export function LoginShell({
     setPending(true);
     const supabase = createBrowserSupabaseClient();
 
-    const { error: signError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    const trimmedIdentifier = identifier.trim();
+    let signErrorMessage: string | null;
+    if (trimmedIdentifier.includes("@")) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: trimmedIdentifier,
+        password,
+      });
+      signErrorMessage = error?.message ?? null;
+    } else {
+      ({ error: signErrorMessage } = await signInWithUsernameAction(
+        trimmedIdentifier,
+        password
+      ));
+    }
 
-    if (signError) {
-      setFormError(signError.message);
+    if (signErrorMessage) {
+      setFormError(signErrorMessage);
       setPending(false);
       return;
     }
@@ -187,19 +198,22 @@ export function LoginShell({
         </p>
 
         <div>
-          <label htmlFor="email" className={labelClass}>
-            Email <span className="font-normal text-oak-muted">(username)</span>
+          <label htmlFor="identifier" className={labelClass}>
+            Username or email
           </label>
           <p className="mb-1.5 text-xs text-oak-muted">{login.emailHint}</p>
           <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id="identifier"
+            name="identifier"
+            type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             className={loginInputClass}
-            placeholder="you@company.com"
+            placeholder="e.g. 3450VW or you@company.com"
             disabled={!supabaseConfigured || pending}
             required
           />
