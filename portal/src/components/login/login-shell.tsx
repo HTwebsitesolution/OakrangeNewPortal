@@ -63,10 +63,13 @@ export function LoginShell({
       });
       signErrorMessage = error?.message ?? null;
     } else {
-      ({ error: signErrorMessage } = await signInWithUsernameAction(
-        trimmedIdentifier,
-        password
-      ));
+      const result = await signInWithUsernameAction(trimmedIdentifier, password);
+      if (result.session) {
+        const { error } = await supabase.auth.setSession(result.session);
+        signErrorMessage = error?.message ?? null;
+      } else {
+        signErrorMessage = result.error;
+      }
     }
 
     if (signErrorMessage) {
