@@ -12,6 +12,7 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -23,13 +24,38 @@ export default function ResetPasswordPage() {
       }
     });
 
-    void supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setReady(true);
+    let cancelled = false;
+    async function checkLink() {
+      try {
+        const query = new URLSearchParams(window.location.search);
+        const fragment = new URLSearchParams(window.location.hash.slice(1));
+        if (query.has("error") || fragment.has("error")) {
+          throw new Error("This reset link is invalid or has expired. Request a new reset link.");
+        }
+        const accessToken = fragment.get("access_token");
+        const refreshToken = fragment.get("refresh_token");
+        if (fragment.get("type") === "recovery" && accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          window.history.replaceState(null, "", window.location.pathname);
+          if (error) throw error;
+        }
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!session) throw new Error("This reset link is invalid or has expired. Request a new link and open it in the same browser where you requested it.");
+        if (!cancelled) setReady(true);
+      } catch (error) {
+        if (!cancelled) setError(error instanceof Error ? error.message : "Unable to verify your reset link. Please request a new one.");
+      } finally {
+        if (!cancelled) setChecked(true);
       }
-    });
+    }
+    void checkLink();
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
   }, []);
@@ -58,6 +84,12 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    // End the recovery session so the login route does not send the user to a dashboard.
+    const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+    if (signOutError) {
+      setError("Password updated. Please sign out and sign in again with your new password.");
+      return;
+    }
     router.replace("/login?error=Password%20updated.%20Please%20sign%20in.");
     router.refresh();
   }
@@ -70,7 +102,7 @@ export default function ResetPasswordPage() {
         </h1>
         {!ready ? (
           <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-            Checking your reset link…
+            {checked ? error : "Checking your reset link…"}
           </p>
         ) : (
           <form
@@ -123,6 +155,11 @@ export default function ResetPasswordPage() {
             </button>
           </form>
         )}
+        {checked && !ready ? (
+          <p className="mt-4 text-sm">
+            <Link href="/forgot-password" className="underline">Request a new reset link</Link>
+          </p>
+        ) : null}
         <p className="mt-8 text-center text-sm text-zinc-500">
           <Link href="/login" className="underline underline-offset-2">
             Back to sign in

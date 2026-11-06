@@ -15,6 +15,16 @@
    `https://<your-domain>/reset-password`  
    `http://localhost:3000/reset-password`
 
+   Reset requests use `/auth/callback` without a query string; the callback defaults
+   to `/reset-password`. Keep the callback URL for every deployed origin in the
+   redirect allowlist. An unapproved redirect can fall back to the Site URL.
+   With the standard Supabase recovery email, retain `{{ .ConfirmationURL }}` as
+   the link target. A custom recovery template can instead use
+   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery`.
+   PKCE email links must be opened in the browser where the reset was requested;
+   a recovery token hash template supports opening the email in another browser.
+   Expired or already used links require a new reset request.
+
 ## Vercel
 
 1. Import the repository; set **Root Directory** to `portal` (or deploy from repo root using root `package.json` scripts).
