@@ -1,6 +1,7 @@
 /**
- * Prospect demo: "Oakrange Demo Company" with two sites, real Oakrange report PDFs as
- * certificates, and three portal logins (whole company + one per site). Idempotent.
+ * Prospect demo: "Motus Demo Portal" with two sites, real Oakrange report PDFs as
+ * certificates, and four portal logins (whole company, a manager over both sites, and
+ * one per site). Idempotent.
  *
  * Usage: DEMO_PASSWORD=... node scripts/seed-prospect-demo.mjs <folder-containing-the-pdfs>
  * Requires portal/.env.local with SUPABASE_SERVICE_ROLE_KEY.
@@ -34,7 +35,7 @@ const admin = createClient(url, serviceKey, {
 const UPLOADER_EMAIL = "info@oakrange.co.uk";
 
 const COMPANY = {
-  company_name: "Oakrange Demo Company",
+  company_name: "Motus Demo Portal",
   primary_contact_name: "Demo Contact",
   primary_contact_email: "demo@example.com",
 };
@@ -111,9 +112,10 @@ const SITES = [
 ];
 
 const USERS = [
-  { email: "demo@example.com", username: "Demo2026", access: "company" },
-  { email: "demo.anston@example.com", username: "Anston2026", access: ["anston"] },
-  { email: "demo.barnsley@example.com", username: "Barnsley2026", access: ["barnsley"] },
+  { email: "demo@example.com", username: "Demo2026", role: "customer_user", access: "company" },
+  { email: "motus.manager@example.com", username: "motusmanager", role: "site_manager", access: ["anston", "barnsley"] },
+  { email: "demo.anston@example.com", username: "Anston2026", role: "customer_user", access: ["anston"] },
+  { email: "demo.barnsley@example.com", username: "Barnsley2026", role: "customer_user", access: ["barnsley"] },
 ];
 
 function formatLongDate(iso) {
@@ -265,7 +267,7 @@ async function ensureUser(spec, companyId, siteIds, uploaderProfileId) {
   const update = {
     email: spec.email,
     full_name: COMPANY.company_name,
-    role: "customer_user",
+    role: spec.role,
     admin_level: null,
     company_id: companyId,
     is_active: true,
@@ -326,7 +328,7 @@ async function main() {
   for (const spec of USERS) {
     const username = await ensureUser(spec, company.id, siteIds, uploader.id);
     const scope = spec.access === "company" ? "whole company" : spec.access.join(", ");
-    console.log(`User: ${username} / ${spec.email} (${scope})`);
+    console.log(`User: ${username} / ${spec.email} (${spec.role}, ${scope})`);
   }
 }
 
