@@ -32,7 +32,9 @@ export function PortalDashboardSites({
               ) : null}
               <h3 className="font-semibold text-oak-navy">{site.siteName}</h3>
               <ul className="mt-2 space-y-1 text-sm text-oak-muted">
-                <li>{site.certificateCount} certificates</li>
+                <li>
+                  {site.certificateCount} certificate{site.certificateCount === 1 ? "" : "s"}
+                </li>
                 <li>{site.expiringSoonCount} expiring soon</li>
                 {site.expiredCount > 0 ? <li>{site.expiredCount} expired</li> : null}
                 {site.latestIssueDate ? (

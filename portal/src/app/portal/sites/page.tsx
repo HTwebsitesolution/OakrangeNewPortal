@@ -44,7 +44,9 @@ export default async function PortalSitesPage() {
                 ) : null}
                 <h2 className="font-medium text-zinc-900 dark:text-zinc-50">{site.siteName}</h2>
                 <ul className="mt-2 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  <li>{site.certificateCount} certificates</li>
+                  <li>
+                    {site.certificateCount} certificate{site.certificateCount === 1 ? "" : "s"}
+                  </li>
                   <li>{site.expiredCount} expired</li>
                   <li>{site.expiringSoonCount} expiring within 30 days</li>
                   {site.latestIssueDate ? (
