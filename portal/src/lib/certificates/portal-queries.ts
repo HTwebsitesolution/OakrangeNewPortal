@@ -64,6 +64,7 @@ export type PortalExpiryFilter = "active" | "expired" | "no_due_date";
 
 export type PortalCertificateListFilters = {
   search?: string | null;
+  companyId?: string | null;
   siteId?: string | null;
   documentType?: CertificateDocumentType | null;
   expiry?: PortalExpiryFilter | null;
@@ -116,6 +117,8 @@ export type PortalAccessGrant = {
 };
 
 export type PortalSiteSummary = {
+  companyId: string;
+  companyLabel: string | null;
   siteId: string | null;
   siteName: string;
   certificateCount: number;
@@ -124,16 +127,50 @@ export type PortalSiteSummary = {
   latestIssueDate: string | null;
 };
 
+export type PortalCompanyOption = {
+  id: string;
+  companyName: string;
+  customerIdReadable: string;
+};
+
+export type PortalTeamMember = {
+  assignmentId: string;
+  memberName: string;
+  companyName: string | null;
+  customerIdReadable: string | null;
+};
+
 export type PortalDashboardData = {
   companyName: string | null;
   customerIdReadable: string | null;
+  /** Every company this login can see certificates for (direct grants and approved delegation). */
+  companies: PortalCompanyOption[];
   totalCertificates: number;
   expiredCount: number;
   expiringSoonCount: number;
   latestCertificates: PortalCertificateRow[];
   siteSummaries: PortalSiteSummary[];
   hasCompanyWideAccess: boolean;
+  hasDelegatedAccess: boolean;
   assignedSiteCount: number;
+  teamMembers: PortalTeamMember[];
+};
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const EMPTY_DASHBOARD: PortalDashboardData = {
+  companyName: null,
+  customerIdReadable: null,
+  companies: [],
+  totalCertificates: 0,
+  expiredCount: 0,
+  expiringSoonCount: 0,
+  latestCertificates: [],
+  siteSummaries: [],
+  hasCompanyWideAccess: false,
+  hasDelegatedAccess: false,
+  assignedSiteCount: 0,
+  teamMembers: [],
 };
 
 function normalizeSearch(value: string | null | undefined): string | null {
@@ -157,8 +194,11 @@ export function readPortalCertificateListFilters(
     return typeof value === "string" ? value : null;
   };
 
+  const companyId = normalizeSearch(read("companyId"));
+
   return {
     search: normalizeSearch(read("q") ?? read("search")),
+    companyId: companyId && UUID_RE.test(companyId) ? companyId : null,
     siteId: normalizeSearch(read("siteId")),
     documentType: parseCertificateDocumentType(read("documentType")),
     expiry: parseExpiryFilter(read("status") ?? read("expiry")),
@@ -217,9 +257,13 @@ export async function listPortalCertificates(
     .order("issue_date", { ascending: false })
     .order("uploaded_at", { ascending: false });
 
+  if (filters.companyId) {
+    query = query.eq("company_id", filters.companyId);
+  }
+
   if (filters.siteId === PORTAL_COMPANY_LEVEL_SITE_FILTER) {
     query = query.is("site_id", null);
-  } else if (filters.siteId) {
+  } else if (filters.siteId && UUID_RE.test(filters.siteId)) {
     query = query.eq("site_id", filters.siteId);
   }
 
@@ -380,16 +424,71 @@ export async function loadPortalAccessGrants(
   return { grants: (data ?? []) as PortalAccessGrant[], error: null };
 }
 
-function buildSiteSummaries(rows: PortalCertificateRow[]): PortalSiteSummary[] {
+type DelegatedScope = { company_id: string; site_id: string | null };
+
+/** Active approved delegated scopes for the signed-in manager (RLS: own assignments only). */
+async function loadDelegatedScopes(supabase: SupabaseClient): Promise<DelegatedScope[]> {
+  const { data, error } = await supabase
+    .from("manager_assignment_scopes")
+    .select("company_id, site_id, manager_user_assignments!inner(is_active)")
+    .eq("is_active", true)
+    .eq("manager_user_assignments.is_active", true);
+  if (error) return [];
+  return (data ?? []).map((row) => ({
+    company_id: row.company_id as string,
+    site_id: (row.site_id as string | null) ?? null,
+  }));
+}
+
+async function loadTeamMembers(supabase: SupabaseClient): Promise<PortalTeamMember[]> {
+  const { data, error } = await supabase.rpc("manager_team_members");
+  if (error || !Array.isArray(data)) return [];
+  return data.map((row: {
+    assignment_id: string;
+    member_name: string;
+    company_name: string | null;
+    customer_id_readable: string | null;
+  }) => ({
+    assignmentId: row.assignment_id,
+    memberName: row.member_name,
+    companyName: row.company_name,
+    customerIdReadable: row.customer_id_readable,
+  }));
+}
+
+function collectCompanies(
+  rows: PortalCertificateRow[],
+  grants: PortalAccessGrant[],
+  extra: Array<{ id: string; company_name: string; customer_id_readable: string }> = []
+): PortalCompanyOption[] {
+  const byId = new Map<string, PortalCompanyOption>();
+  const add = (c: { id: string; company_name: string; customer_id_readable: string } | null) => {
+    if (c && !byId.has(c.id)) {
+      byId.set(c.id, { id: c.id, companyName: c.company_name, customerIdReadable: c.customer_id_readable });
+    }
+  };
+  for (const row of rows) add(one(row.companies));
+  for (const grant of grants) add(one(grant.companies));
+  for (const c of extra) add(c);
+  return [...byId.values()].sort((a, b) => a.companyName.localeCompare(b.companyName));
+}
+
+function buildSiteSummaries(rows: PortalCertificateRow[], multiCompany: boolean): PortalSiteSummary[] {
   const summaries = new Map<string, PortalSiteSummary>();
 
   for (const row of rows) {
     const site = one(row.sites);
-    const key = row.site_id ?? "company-level";
+    const company = one(row.companies);
+    const key = `${row.company_id}:${row.site_id ?? "company-level"}`;
     const siteName = site?.site_name ?? "Company-level documents";
     const existing =
       summaries.get(key) ??
       ({
+        companyId: row.company_id,
+        companyLabel:
+          multiCompany && company
+            ? `${company.company_name} (${company.customer_id_readable})`
+            : null,
         siteId: row.site_id,
         siteName,
         certificateCount: 0,
@@ -425,8 +524,10 @@ function buildSiteSummaries(rows: PortalCertificateRow[]): PortalSiteSummary[] {
     summaries.set(key, existing);
   }
 
-  return [...summaries.values()].sort((a, b) =>
-    a.siteName.localeCompare(b.siteName)
+  return [...summaries.values()].sort(
+    (a, b) =>
+      (a.companyLabel ?? "").localeCompare(b.companyLabel ?? "") ||
+      (a.siteId === null ? -1 : b.siteId === null ? 1 : a.siteName.localeCompare(b.siteName))
   );
 }
 
@@ -436,50 +537,38 @@ export async function loadPortalDashboardData(
 ): Promise<{ data: PortalDashboardData; error: string | null }> {
   const { rows, error } = await listPortalCertificates(supabase, {});
   if (error) {
-    return {
-      data: {
-        companyName: null,
-        customerIdReadable: null,
-        totalCertificates: 0,
-        expiredCount: 0,
-        expiringSoonCount: 0,
-        latestCertificates: [],
-        siteSummaries: [],
-        hasCompanyWideAccess: false,
-        assignedSiteCount: 0,
-      },
-      error,
-    };
+    return { data: EMPTY_DASHBOARD, error };
   }
 
-  const { grants, error: grantsError } = await loadPortalAccessGrants(
-    supabase,
-    profileId
-  );
+  const [{ grants, error: grantsError }, delegated, teamMembers] = await Promise.all([
+    loadPortalAccessGrants(supabase, profileId),
+    loadDelegatedScopes(supabase),
+    loadTeamMembers(supabase),
+  ]);
   if (grantsError) {
-    return {
-      data: {
-        companyName: null,
-        customerIdReadable: null,
-        totalCertificates: 0,
-        expiredCount: 0,
-        expiringSoonCount: 0,
-        latestCertificates: [],
-        siteSummaries: [],
-        hasCompanyWideAccess: false,
-        assignedSiteCount: 0,
-      },
-      error: grantsError,
-    };
+    return { data: EMPTY_DASHBOARD, error: grantsError };
   }
 
-  const company = one(rows[0]?.companies) ?? one(grants[0]?.companies);
+  let delegatedCompanies: Array<{ id: string; company_name: string; customer_id_readable: string }> = [];
+  if (delegated.length) {
+    const { data } = await supabase
+      .from("companies")
+      .select("id, company_name, customer_id_readable")
+      .in("id", [...new Set(delegated.map((d) => d.company_id))]);
+    delegatedCompanies = data ?? [];
+  }
+
+  const companies = collectCompanies(rows, grants, delegatedCompanies);
+  const single = companies.length === 1 ? companies[0] : null;
   const hasCompanyWideAccess = grants.some(
     (grant) => grant.access_type === "company"
   );
-  const assignedSiteCount = grants.filter(
-    (grant) => grant.access_type === "site" && grant.site_id
-  ).length;
+  const assignedSiteCount = new Set([
+    ...grants
+      .filter((grant) => grant.access_type === "site" && grant.site_id)
+      .map((grant) => grant.site_id as string),
+    ...delegated.filter((d) => d.site_id).map((d) => d.site_id as string),
+  ]).size;
 
   let expiredCount = 0;
   let expiringSoonCount = 0;
@@ -502,15 +591,18 @@ export async function loadPortalDashboardData(
 
   return {
     data: {
-      companyName: company?.company_name ?? null,
-      customerIdReadable: company?.customer_id_readable ?? null,
+      companyName: single?.companyName ?? null,
+      customerIdReadable: single?.customerIdReadable ?? null,
+      companies,
       totalCertificates: rows.length,
       expiredCount,
       expiringSoonCount,
       latestCertificates: rows.slice(0, 5),
-      siteSummaries: buildSiteSummaries(rows),
+      siteSummaries: buildSiteSummaries(rows, companies.length > 1),
       hasCompanyWideAccess,
+      hasDelegatedAccess: delegated.length > 0,
       assignedSiteCount,
+      teamMembers,
     },
     error: null,
   };
@@ -523,52 +615,75 @@ export function getPortalExpiryStateForRow(row: PortalCertificateRow): Certifica
   });
 }
 
+export type PortalFilterOptions = {
+  options: Array<{ value: string; label: string }>;
+  showSiteFilter: boolean;
+  companyOptions: Array<{ value: string; label: string }>;
+  showCompanyFilter: boolean;
+};
+
+/**
+ * Site and company filter options, built only from what this login can already read through RLS
+ * (visible certificates, own grants, own approved delegated scopes).
+ */
 export async function loadPortalSiteFilterOptions(
   supabase: SupabaseClient,
   profileId: string
-): Promise<{ options: Array<{ value: string; label: string }>; showSiteFilter: boolean }> {
-  const { grants, error: grantsError } = await loadPortalAccessGrants(supabase, profileId);
-  if (grantsError) {
-    return { options: [], showSiteFilter: false };
+): Promise<PortalFilterOptions> {
+  const empty: PortalFilterOptions = { options: [], showSiteFilter: false, companyOptions: [], showCompanyFilter: false };
+  const [{ grants, error: grantsError }, { rows }, delegated] = await Promise.all([
+    loadPortalAccessGrants(supabase, profileId),
+    listPortalCertificates(supabase, {}),
+    loadDelegatedScopes(supabase),
+  ]);
+  if (grantsError) return empty;
+
+  const delegatedSiteIds = [...new Set(delegated.filter((d) => d.site_id).map((d) => d.site_id as string))];
+  const [{ data: delegatedSites }, { data: delegatedCompanies }] = await Promise.all([
+    delegatedSiteIds.length
+      ? supabase.from("sites").select("id, company_id, site_name").in("id", delegatedSiteIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; company_id: string; site_name: string }> }),
+    delegated.length
+      ? supabase
+          .from("companies")
+          .select("id, company_name, customer_id_readable")
+          .in("id", [...new Set(delegated.map((d) => d.company_id))])
+      : Promise.resolve({ data: [] as Array<{ id: string; company_name: string; customer_id_readable: string }> }),
+  ]);
+
+  const companies = collectCompanies(rows, grants, delegatedCompanies ?? []);
+  const multiCompany = companies.length > 1;
+  const companyName = new Map(companies.map((c) => [c.id, c.companyName]));
+
+  const sites = new Map<string, string>();
+  const addSite = (siteId: string, siteName: string, companyId: string) => {
+    const owner = companyName.get(companyId);
+    sites.set(siteId, multiCompany && owner ? `${siteName} — ${owner}` : siteName);
+  };
+  let hasCompanyLevel = false;
+  for (const row of rows) {
+    const site = one(row.sites);
+    if (!row.site_id) hasCompanyLevel = true;
+    else if (site) addSite(row.site_id, site.site_name, row.company_id);
   }
-
-  const hasCompanyAccess = grants.some((grant) => grant.access_type === "company");
-  const siteGrants = grants.filter(
-    (grant) => grant.access_type === "site" && grant.site_id
-  );
-
-  if (hasCompanyAccess) {
-    const { rows } = await listPortalCertificates(supabase, {});
-    const options = new Map<string, string>();
-
-    for (const row of rows) {
-      if (!row.site_id) {
-        options.set(PORTAL_COMPANY_LEVEL_SITE_FILTER, "Company-level documents");
-        continue;
-      }
-      const site = one(row.sites);
-      if (site) {
-        options.set(row.site_id, site.site_name);
-      }
-    }
-
-    return {
-      options: [...options.entries()].map(([value, label]) => ({ value, label })),
-      showSiteFilter: options.size > 1,
-    };
+  for (const grant of grants) {
+    const site = one(grant.sites);
+    if (grant.access_type === "site" && grant.site_id && site) addSite(grant.site_id, site.site_name, grant.company_id);
   }
+  for (const site of delegatedSites ?? []) addSite(site.id, site.site_name, site.company_id);
 
-  const options = siteGrants
-    .map((grant) => {
-      const site = one(grant.sites);
-      if (!grant.site_id || !site) return null;
-      return { value: grant.site_id, label: site.site_name };
-    })
-    .filter((item): item is { value: string; label: string } => item !== null);
+  const options = [...sites.entries()]
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  if (hasCompanyLevel) {
+    options.unshift({ value: PORTAL_COMPANY_LEVEL_SITE_FILTER, label: "Company-level documents" });
+  }
 
   return {
     options,
     showSiteFilter: options.length > 1,
+    companyOptions: companies.map((c) => ({ value: c.id, label: `${c.companyName} (${c.customerIdReadable})` })),
+    showCompanyFilter: multiCompany,
   };
 }
 

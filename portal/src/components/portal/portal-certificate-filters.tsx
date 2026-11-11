@@ -11,6 +11,8 @@ type Props = {
   filters: PortalCertificateListFilters;
   siteOptions: PortalSiteFilterOption[];
   showSiteFilter: boolean;
+  companyOptions?: PortalSiteFilterOption[];
+  showCompanyFilter?: boolean;
 };
 
 function inputClassName() {
@@ -21,6 +23,8 @@ export function PortalCertificateFiltersForm({
   filters,
   siteOptions,
   showSiteFilter,
+  companyOptions = [],
+  showCompanyFilter = false,
 }: Props) {
   return (
     <form
@@ -59,6 +63,27 @@ export function PortalCertificateFiltersForm({
             className={inputClassName()}
           />
         </div>
+
+        {showCompanyFilter ? (
+          <div>
+            <label htmlFor="companyId" className="block text-xs font-medium text-zinc-600">
+              Company / branch
+            </label>
+            <select
+              id="companyId"
+              name="companyId"
+              defaultValue={filters.companyId ?? ""}
+              className={inputClassName()}
+            >
+              <option value="">All companies</option>
+              {companyOptions.map((company) => (
+                <option key={company.value} value={company.value}>
+                  {company.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
 
         {showSiteFilter ? (
           <div>
