@@ -23,16 +23,18 @@ export function PortalDashboardSites({
       <h2 className="text-lg font-semibold tracking-tight text-oak-navy">{brand.portal.sitesTitle}</h2>
       <div className="grid gap-3 md:grid-cols-2">
         {summaries.map((site) => {
-          const siteQuery =
-            site.siteId === null
-              ? `siteId=${PORTAL_COMPANY_LEVEL_SITE_FILTER}`
-              : `siteId=${site.siteId}`;
+          const siteQuery = `companyId=${site.companyId}&siteId=${site.siteId ?? PORTAL_COMPANY_LEVEL_SITE_FILTER}`;
 
           return (
-            <article key={site.siteId ?? "company-level"} className={`${cardClass} p-4`}>
+            <article key={`${site.companyId}:${site.siteId ?? "company-level"}`} className={`${cardClass} p-4`}>
+              {site.companyLabel ? (
+                <p className="text-xs font-semibold uppercase tracking-wide text-oak-orange">{site.companyLabel}</p>
+              ) : null}
               <h3 className="font-semibold text-oak-navy">{site.siteName}</h3>
               <ul className="mt-2 space-y-1 text-sm text-oak-muted">
-                <li>{site.certificateCount} certificates</li>
+                <li>
+                  {site.certificateCount} certificate{site.certificateCount === 1 ? "" : "s"}
+                </li>
                 <li>{site.expiringSoonCount} expiring soon</li>
                 {site.expiredCount > 0 ? <li>{site.expiredCount} expired</li> : null}
                 {site.latestIssueDate ? (

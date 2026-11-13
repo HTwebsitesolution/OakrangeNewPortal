@@ -20,9 +20,11 @@ import type { CertificateDocumentType } from "@/lib/certificates/types";
 export function PortalCertificateTable({
   rows,
   emptyMessage,
+  showCompany = false,
 }: {
   rows: PortalCertificateRow[];
   emptyMessage: string;
+  showCompany?: boolean;
 }) {
   if (rows.length === 0) {
     return <EmptyState message={emptyMessage} />;
@@ -30,13 +32,13 @@ export function PortalCertificateTable({
 
   return (
     <>
-      <PortalCertificateMobileCards rows={rows} />
+      <PortalCertificateMobileCards rows={rows} showCompany={showCompany} />
       <div className={`${tableShellClass} hidden md:block`}>
         <table className={tableClass}>
           <thead className={tableHeadClass}>
             <tr>
               <th className={tableThClass}>Certificate</th>
-              <th className={tableThClass}>Site</th>
+              <th className={tableThClass}>{showCompany ? "Company / site" : "Site"}</th>
               <th className={tableThClass}>Status</th>
               <th className={tableThClass}>Dates</th>
               <th className={tableThClass}>Actions</th>
@@ -45,6 +47,7 @@ export function PortalCertificateTable({
           <tbody className={tableBodyClass}>
             {rows.map((row) => {
               const site = one(row.sites);
+              const company = one(row.companies);
 
               return (
                 <tr key={row.id} className="hover:bg-slate-50/80">
@@ -61,7 +64,14 @@ export function PortalCertificateTable({
                       )}
                     </p>
                   </td>
-                  <td className={tableTdClass}>{site?.site_name ?? "Company-level"}</td>
+                  <td className={tableTdClass}>
+                    {showCompany && company ? (
+                      <p className="font-medium text-oak-navy">{company.company_name}</p>
+                    ) : null}
+                    <p className={showCompany ? "text-oak-muted" : undefined}>
+                      {site?.site_name ?? "Company-level"}
+                    </p>
+                  </td>
                   <td className={tableTdClass}>
                     <PortalExpiryBadge status="active" dueDate={row.due_date} />
                   </td>

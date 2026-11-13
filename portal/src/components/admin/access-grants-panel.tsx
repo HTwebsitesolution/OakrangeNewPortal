@@ -15,11 +15,15 @@ export type AccessRow = {
   access_type: "company" | "site";
   company_id: string;
   site_id: string | null;
-  companies: { company_name: string } | null;
+  companies: { company_name: string; customer_id_readable?: string } | null;
   sites: { site_name: string } | null;
 };
 
-type CompanyOption = { id: string; company_name: string };
+type CompanyOption = { id: string; company_name: string; customer_id_readable: string };
+
+function companyOptionLabel(c: CompanyOption) {
+  return `${c.company_name} (${c.customer_id_readable})`;
+}
 type SiteOption = { id: string; company_id: string; site_name: string };
 
 export function AccessGrantsPanel({
@@ -82,7 +86,9 @@ export function AccessGrantsPanel({
                   {row.access_type === "company" ? (
                     <>
                       <span className="font-medium">Company</span> —{" "}
-                      {row.companies?.company_name ?? row.company_id}
+                      {row.companies
+                        ? `${row.companies.company_name}${row.companies.customer_id_readable ? ` (${row.companies.customer_id_readable})` : ""}`
+                        : row.company_id}
                     </>
                   ) : (
                     <>
@@ -129,7 +135,7 @@ export function AccessGrantsPanel({
               <option value="">Select company…</option>
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.company_name}
+                  {companyOptionLabel(c)}
                 </option>
               ))}
             </select>
@@ -166,7 +172,7 @@ export function AccessGrantsPanel({
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.company_name}
+                  {companyOptionLabel(c)}
                 </option>
               ))}
             </select>

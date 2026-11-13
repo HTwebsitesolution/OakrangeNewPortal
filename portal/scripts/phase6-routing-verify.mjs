@@ -10,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = process.env.PHASE6_BASE_URL ?? "http://127.0.0.1:3000";
 
 function loadEnvFile() {
-  const envPath = resolve(__dirname, "..", ".env.local");
+  const envPath = resolve(__dirname, "..", process.env.PORTAL_ENV_FILE ?? ".env.local");
   if (!existsSync(envPath)) return;
   for (const line of readFileSync(envPath, "utf8").split("\n")) {
     const trimmed = line.trim();

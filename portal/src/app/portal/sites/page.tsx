@@ -32,19 +32,21 @@ export default async function PortalSitesPage() {
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {data.siteSummaries.map((site) => {
-            const siteQuery =
-              site.siteId === null
-                ? `siteId=${PORTAL_COMPANY_LEVEL_SITE_FILTER}`
-                : `siteId=${site.siteId}`;
+            const siteQuery = `companyId=${site.companyId}&siteId=${site.siteId ?? PORTAL_COMPANY_LEVEL_SITE_FILTER}`;
 
             return (
               <article
-                key={site.siteId ?? "company-level"}
+                key={`${site.companyId}:${site.siteId ?? "company-level"}`}
                 className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
               >
+                {site.companyLabel ? (
+                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{site.companyLabel}</p>
+                ) : null}
                 <h2 className="font-medium text-zinc-900 dark:text-zinc-50">{site.siteName}</h2>
                 <ul className="mt-2 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  <li>{site.certificateCount} certificates</li>
+                  <li>
+                    {site.certificateCount} certificate{site.certificateCount === 1 ? "" : "s"}
+                  </li>
                   <li>{site.expiredCount} expired</li>
                   <li>{site.expiringSoonCount} expiring within 30 days</li>
                   {site.latestIssueDate ? (
@@ -63,9 +65,14 @@ export default async function PortalSitesPage() {
         </div>
       )}
 
-      {data.hasCompanyWideAccess ? (
+      {data.hasCompanyWideAccess && !data.hasDelegatedAccess && data.companies.length <= 1 ? (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           You have company-wide access, including all company sites and company-level documents.
+        </p>
+      ) : null}
+      {data.hasDelegatedAccess ? (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Includes the branches Oakrange has approved for your team.
         </p>
       ) : null}
     </div>

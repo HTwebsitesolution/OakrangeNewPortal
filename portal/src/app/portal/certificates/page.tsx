@@ -17,13 +17,14 @@ export default async function PortalCertificatesPage({
 }) {
   const filters = readPortalCertificateListFilters(await searchParams);
   const { supabase, profile } = await requirePortalSupabase();
-  const [{ rows, error }, { options, showSiteFilter }] = await Promise.all([
+  const [{ rows, error }, { options, showSiteFilter, companyOptions, showCompanyFilter }] = await Promise.all([
     listPortalCertificates(supabase, filters),
     loadPortalSiteFilterOptions(supabase, profile.id),
   ]);
 
   const emptyMessage =
     filters.search ||
+    filters.companyId ||
     filters.siteId ||
     filters.documentType ||
     filters.expiry ||
@@ -46,11 +47,13 @@ export default async function PortalCertificatesPage({
         filters={filters}
         siteOptions={options}
         showSiteFilter={showSiteFilter}
+        companyOptions={companyOptions}
+        showCompanyFilter={showCompanyFilter}
       />
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <PortalCertificateTable rows={rows} emptyMessage={emptyMessage} />
+      <PortalCertificateTable rows={rows} emptyMessage={emptyMessage} showCompany={showCompanyFilter} />
     </div>
   );
 }

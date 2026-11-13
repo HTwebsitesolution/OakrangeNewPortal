@@ -8,15 +8,26 @@ import { PageHeader } from "@/components/ui/page-header";
 import { brand } from "@/lib/copy/brand";
 import { requirePortalSupabase } from "@/lib/auth/require-session";
 import { loadPortalDashboardData } from "@/lib/certificates/portal-queries";
+import { cardClass } from "@/lib/ui/classes";
 
 export default async function PortalDashboardPage() {
   const { supabase, profile } = await requirePortalSupabase();
   const { data, error } = await loadPortalDashboardData(supabase, profile.id);
 
   const welcomeName = profile.full_name || profile.email;
-  const companyLabel = data.companyName
-    ? `${data.companyName}${data.customerIdReadable ? ` (${data.customerIdReadable})` : ""}`
-    : null;
+  const multiCompany = data.companies.length > 1;
+  const companyLabel = multiCompany
+    ? `${data.companies.length} companies: ${data.companies
+        .map((c) => `${c.companyName} (${c.customerIdReadable})`)
+        .join(", ")}`
+    : data.companyName
+      ? `${data.companyName}${data.customerIdReadable ? ` (${data.customerIdReadable})` : ""}`
+      : null;
+  const assignedSitesValue = data.hasDelegatedAccess
+    ? data.assignedSiteCount
+    : data.hasCompanyWideAccess
+      ? "All sites"
+      : data.assignedSiteCount;
 
   return (
     <div className="space-y-8 pb-4">
@@ -70,19 +81,38 @@ export default async function PortalDashboardPage() {
             accent="warning"
           />
           <MetricCard label="Expired" value={data.expiredCount} accent="danger" />
-          <MetricCard
-            label="Assigned sites"
-            value={data.hasCompanyWideAccess ? "All sites" : data.assignedSiteCount}
-          />
+          <MetricCard label="Assigned sites" value={assignedSitesValue} />
         </div>
       </section>
 
       <PortalDashboardSites
         summaries={data.siteSummaries}
         showSection={
-          data.hasCompanyWideAccess || data.assignedSiteCount > 1 || data.siteSummaries.length > 1
+          data.hasCompanyWideAccess ||
+          multiCompany ||
+          data.assignedSiteCount > 1 ||
+          data.siteSummaries.length > 1
         }
       />
+
+      {data.teamMembers.length > 0 ? (
+        <section className="space-y-3" aria-label="Your team">
+          <h2 className="text-lg font-semibold tracking-tight text-oak-navy">Your team</h2>
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {data.teamMembers.map((member) => (
+              <li key={member.assignmentId} className={`${cardClass} px-4 py-3`}>
+                <p className="font-medium text-oak-navy">{member.memberName}</p>
+                {member.companyName ? (
+                  <p className="text-sm text-oak-muted">
+                    {member.companyName}
+                    {member.customerIdReadable ? ` (${member.customerIdReadable})` : ""}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="space-y-3" aria-label="Latest certificates">
         <div className="flex items-end justify-between gap-2">
@@ -97,6 +127,7 @@ export default async function PortalDashboardPage() {
         <PortalCertificateTable
           rows={data.latestCertificates}
           emptyMessage={brand.portal.certificatesEmpty}
+          showCompany={multiCompany}
         />
       </section>
     </div>

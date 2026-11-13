@@ -4,9 +4,12 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** Load portal/.env.local into process.env (does not override existing vars). */
+/**
+ * Load portal/.env.local into process.env (does not override existing vars).
+ * Set PORTAL_ENV_FILE (e.g. ".env.staging.local") to load a different file from portal/.
+ */
 export function loadEnvLocal() {
-  const envPath = resolve(__dirname, "..", ".env.local");
+  const envPath = resolve(__dirname, "..", process.env.PORTAL_ENV_FILE ?? ".env.local");
   if (!existsSync(envPath)) return false;
   for (const line of readFileSync(envPath, "utf8").split("\n")) {
     const trimmed = line.trim();

@@ -8,11 +8,18 @@ import { PortalExpiryBadge } from "@/components/portal/portal-expiry-badge";
 import { cardClass } from "@/lib/ui/classes";
 import type { CertificateDocumentType } from "@/lib/certificates/types";
 
-export function PortalCertificateMobileCards({ rows }: { rows: PortalCertificateRow[] }) {
+export function PortalCertificateMobileCards({
+  rows,
+  showCompany = false,
+}: {
+  rows: PortalCertificateRow[];
+  showCompany?: boolean;
+}) {
   return (
     <ul className="space-y-3 md:hidden">
       {rows.map((row) => {
         const site = one(row.sites);
+        const company = showCompany ? one(row.companies) : null;
         return (
           <li key={row.id} className={`${cardClass} p-4`}>
             <div className="flex items-start justify-between gap-2">
@@ -29,6 +36,7 @@ export function PortalCertificateMobileCards({ rows }: { rows: PortalCertificate
                   )}
                   {site?.site_name ? ` · ${site.site_name}` : " · Company-level"}
                 </p>
+                {company ? <p className="mt-0.5 text-xs font-medium text-oak-navy">{company.company_name}</p> : null}
               </div>
               <PortalExpiryBadge status="active" dueDate={row.due_date} />
             </div>

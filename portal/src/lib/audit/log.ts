@@ -36,7 +36,11 @@ export type AdminAuditAction =
   | "password_reset_or_invite_sent"
   | "access_grant_created"
   | "access_grant_removed"
-  | "access_grant_changed";
+  | "access_grant_changed"
+  | "manager_assignment_created"
+  | "manager_assignment_removed"
+  | "manager_scope_approved"
+  | "manager_scope_revoked";
 
 export type AuditAction = AuthAuditAction | AdminAuditAction;
 

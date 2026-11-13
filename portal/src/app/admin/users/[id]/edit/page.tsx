@@ -6,7 +6,9 @@ import { mapCompanySearchRow } from "@/lib/admin/company-search";
 import { creatableRolesForActor } from "@/lib/admin/validation";
 import { UserEditForm } from "@/components/admin/user-edit-form";
 import { AccessGrantsPanel, type AccessRow } from "@/components/admin/access-grants-panel";
+import { ManagerAccessPanel } from "@/components/admin/manager-access-panel";
 import { one } from "@/lib/admin/embed";
+import { loadManagerAssignments } from "@/lib/admin/manager-access";
 import type { AdminLevel, UserRole } from "@/types/profile";
 
 const UUID_RE =
@@ -43,17 +45,20 @@ export default async function AdminUserEditPage({
   const companySelect =
     "id, customer_id_readable, company_name, status" as const;
 
-  const [{ data: companies }, { data: sites }, { data: accessRows }, { data: profileCompany }] =
+  const [{ data: companies }, { data: sites }, { data: accessRows }, { data: profileCompany }, managerAccess] =
     await Promise.all([
-      supabase.from("companies").select("id, company_name").order("company_name"),
+      supabase.from("companies").select("id, company_name, customer_id_readable").order("company_name"),
       supabase.from("sites").select("id, company_id, site_name").order("site_name").limit(500),
       supabase
         .from("user_site_access")
-        .select("id, access_type, company_id, site_id, companies(company_name), sites(site_name)")
+        .select("id, access_type, company_id, site_id, companies(company_name, customer_id_readable), sites(site_name)")
         .eq("user_id", id),
       p.company_id
         ? supabase.from("companies").select(companySelect).eq("id", p.company_id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
+      p.role === "site_manager"
+        ? loadManagerAssignments(supabase, p.id)
+        : Promise.resolve({ assignments: [], error: null }),
     ]);
 
   const initialCompany = profileCompany ? mapCompanySearchRow(profileCompany) : null;
@@ -63,7 +68,7 @@ export default async function AdminUserEditPage({
     access_type: r.access_type as "company" | "site",
     company_id: r.company_id,
     site_id: r.site_id,
-    companies: one(r.companies) as { company_name: string } | null,
+    companies: one(r.companies) as { company_name: string; customer_id_readable: string } | null,
     sites: one(r.sites) as { site_name: string } | null,
   }));
 
@@ -106,6 +111,24 @@ export default async function AdminUserEditPage({
           />
         </div>
       </section>
+
+      {p.role === "site_manager" ? (
+        <section id="manager-access" className="border-t border-zinc-200 pt-8 dark:border-zinc-800">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Manager access</h2>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Assign customer users from any company to this manager and approve which of their sites and
+            company-level documents the manager can see. This is in addition to the direct access above.
+          </p>
+          <div className="mt-4">
+            <ManagerAccessPanel
+              managerId={p.id}
+              managerIsActive={p.is_active}
+              assignments={managerAccess.assignments}
+              loadError={managerAccess.error}
+            />
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
